@@ -1,3 +1,4 @@
+# Сборка и автотесты при каждом push
 name: build-and-test
 
 on:
@@ -16,3 +17,5 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore -c Release
+      - name: Test
+        run: dotnet test --no-build -c Release --logger "console;verbosity=normal"
