@@ -27,5 +27,5 @@
   "api_product": "{\"id\":1,\"article\":\"KT-001\",\"name\":\"Ручка шариковая синяя\",\"unit\":\"шт.\",\"minQuantity\":20,\"isArchived\":false,\"balance\":65,\"needsRestock\":false}",
   "employee_create": "Сотрудник «Фёдорова Наталья Юрьевна» добавлен",
   "after_restart": "KT-013 найден: да (Скотч прозрачный 19 мм); остаток KT-001 после перезапуска: 65 шт.",
-  "issue_zero_api": "HTTP 400: {\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.1\",\"title\":\"One or more validation errors occurred.\",\"status\":400,\"errors\":{\"Quantity\":[\"Количество должно быть целым числом от 1 до 100000\"]}"
+  "issue_zero_api": "HTTP 400: {\"error\":\"Количество должно быть целым числом от 1 до 100000\"}"
 }
