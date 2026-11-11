@@ -147,6 +147,20 @@ def margins(section):
     section.footer_distance = Mm(10)
 
 
+def auto_widths(rows, total=17.0):
+    """Ширины столбцов пропорционально объёму текста (корень из средней длины), не уже 1,2 см."""
+    n = len(rows[0])
+    weights = []
+    for j in range(n):
+        lens = [len(r[j]) if j < len(r) else 0 for r in rows]
+        avg = sum(lens) / len(lens)
+        weights.append(max(avg, max(len(w) for w in (rows[0][j].split() or [""])) * 0.9) ** 0.75 + 1)
+    s = sum(weights)
+    widths = [max(1.2, total * w / s) for w in weights]
+    k = total / sum(widths)
+    return [w * k for w in widths]
+
+
 # ------------------------------------------------------------------ титульный лист
 def fill_title(doc, info):
     """Заполняет шаблон титульного листа колледжа данными работы."""
@@ -194,6 +208,15 @@ def fill_title(doc, info):
             r2 = p.add_run(info["teacher"])
             set_font(r2, 14, False)
         elif t.startswith("Сургут"):
+            # убираем 4 пустых абзаца перед строкой «Сургут», чтобы титул поместился на один лист
+            prev = p._p.getprevious()
+            removed = 0
+            while prev is not None and removed < 4:
+                nxt = prev.getprevious()
+                if prev.tag == qn("w:p") and not "".join(prev.itertext()).strip() and not prev.findall(".//" + qn("w:drawing")):
+                    prev.getparent().remove(prev)
+                    removed += 1
+                prev = nxt
             replace(p, f"Сургут, {info['year']} г.", 12, True)
 
 
@@ -204,8 +227,7 @@ class NoteBuilder:
         self.info = info
         self.base = Path(base_dir)
         fill_title(self.doc, info)
-        for s in self.doc.sections:
-            margins(s)
+        # поля титульного листа оставляем как в шаблоне колледжа
         # на титульном листе номер не ставится
         page_numbers(self.doc.sections[0], show=False)
         self.table_no = 0
@@ -213,6 +235,7 @@ class NoteBuilder:
         self.toc_entries = []       # (уровень, текст)
         self.toc_pages = {}
         self.first_heading = True
+        self.search_keys = {}
 
         # базовый стиль
         st = self.doc.styles["Normal"]
@@ -246,14 +269,14 @@ class NoteBuilder:
         fmt(p, align=WD_ALIGN_PARAGRAPH.CENTER, indent=0, after=12, hyphen=False)
         set_font(p.add_run("СОДЕРЖАНИЕ"), 14, True)
         self.toc_anchor = p
-        self.first_heading = True
+        self.first_heading = False   # ВВЕДЕНИЕ начнётся с новой страницы после содержания
 
     def _render_toc(self):
         anchor = self.toc_anchor
         for level, text in reversed(self.toc_entries):
             p = self.doc.add_paragraph()
             anchor._p.addnext(p._p)
-            fmt(p, align=WD_ALIGN_PARAGRAPH.LEFT, indent=0, hyphen=False)
+            fmt(p, align=WD_ALIGN_PARAGRAPH.LEFT, indent=0, spacing=1, after=4, hyphen=False)
             p.paragraph_format.left_indent = Cm(0.75 if level == 2 else 0)
             p.paragraph_format.tab_stops.add_tab_stop(Cm(17) - Cm(0.05), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
             page = self.toc_pages.get(text, "")
@@ -284,8 +307,9 @@ class NoteBuilder:
         p2 = self.doc.add_paragraph()
         fmt(p2, align=WD_ALIGN_PARAGRAPH.CENTER, indent=0, after=12, keep_next=True, hyphen=False)
         set_font(p2.add_run(title), 14, True)
-        self.toc_entries.append((1, f"ПРИЛОЖЕНИЕ {letter}. {title.upper()}"))
-        self._appendix_key = f"ПРИЛОЖЕНИЕ {letter}. {title.upper()}"
+        key = f"ПРИЛОЖЕНИЕ {letter}. {title.upper()}"
+        self.toc_entries.append((1, key))
+        self.search_keys[key] = f"Приложение {letter}"
 
     def paragraph(self, text, align=WD_ALIGN_PARAGRAPH.JUSTIFY, indent=1.25):
         p = self.doc.add_paragraph()
@@ -338,15 +362,24 @@ class NoteBuilder:
                     else:
                         self._inline(p, line, font_size)
         repeat_header(t.rows[0])
-        if widths:
-            for row in t.rows:
-                for j, w in enumerate(widths):
-                    row.cells[j].width = Cm(w)
+        if not widths:
+            widths = auto_widths(rows)
+        t.autofit = False
+        tbl_pr = t._tbl.tblPr
+        layout = OxmlElement("w:tblLayout")
+        layout.set(qn("w:type"), "fixed")
+        tbl_pr.append(layout)
+        grid = t._tbl.tblGrid
+        for j, gc in enumerate(grid.findall(qn("w:gridCol"))):
+            gc.set(qn("w:w"), str(int(widths[j] * 567)))
+        for row in t.rows:
+            for j, w in enumerate(widths):
+                row.cells[j].width = Cm(w)
         after = self.doc.add_paragraph()
         fmt(after, indent=0, spacing=1)
         return self.table_no
 
-    def figure(self, path, title, width_cm=16):
+    def figure(self, path, title, width_cm=15):
         self.figure_no += 1
         full = (self.base / path) if not Path(path).is_absolute() else Path(path)
         p = self.doc.add_paragraph()
@@ -416,7 +449,8 @@ class NoteBuilder:
                 continue
             elif line.startswith(":figure "):
                 path, title = [s.strip() for s in line[8:].split("|", 1)]
-                self.figure(path, title)
+                # снимки экрана чуть уже схем, чтобы записка не разрасталась
+                self.figure(path, title, 13.5 if "screenshots" in path else 15)
             elif line.startswith(":formula "):
                 f, n = [s.strip() for s in line[9:].rsplit("|", 1)]
                 self.formula(f, n)
@@ -469,15 +503,15 @@ def build(template, info, note_path, out_path):
 
     b = make({})
     b.doc.save(out_path)
-    pages = find_pages(out_path, [t for _, t in b.toc_entries])
+    pages = find_pages(out_path, [t for _, t in b.toc_entries], b.search_keys)
     b = make(pages)
     b.doc.save(out_path)
     # проверочный PDF рядом
-    pages2 = find_pages(out_path, [t for _, t in b.toc_entries], keep_pdf=True)
+    pages2 = find_pages(out_path, [t for _, t in b.toc_entries], b.search_keys, keep_pdf=True)
     return b, pages2
 
 
-def find_pages(docx_path, titles, keep_pdf=False):
+def find_pages(docx_path, titles, search_keys=None, keep_pdf=False):
     """Конвертирует DOCX в PDF через LibreOffice и ищет номер страницы каждого заголовка."""
     docx_path = Path(docx_path)
     with tempfile.TemporaryDirectory() as tmp:
@@ -495,7 +529,7 @@ def find_pages(docx_path, titles, keep_pdf=False):
     while start_search < len(pages_text) and pages_text[start_search].count("....") >= 3:
         start_search += 1
     for title in titles:
-        key = re.sub(r"\s+", " ", title).strip()
+        key = re.sub(r"\s+", " ", (search_keys or {}).get(title, title)).strip()
         for idx in range(start_search, len(pages_text)):
             page = re.sub(r"\s+", " ", pages_text[idx])
             if key in page:
