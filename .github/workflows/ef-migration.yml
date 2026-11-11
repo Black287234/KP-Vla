@@ -1,5 +1,5 @@
 # Вспомогательный workflow: создаёт миграцию EF Core на сервере GitHub
-# (запускается вручную, результат — артефакт с папкой Migrations)
+# и сохраняет её в репозиторий отдельным коммитом (запуск вручную)
 name: ef-migration
 
 on:
@@ -9,6 +9,9 @@ on:
         description: 'Имя миграции'
         required: true
         default: 'InitialCreate'
+
+permissions:
+  contents: write
 
 jobs:
   migration:
@@ -21,7 +24,10 @@ jobs:
       - run: dotnet tool install --global dotnet-ef --version 10.0.0
       - run: dotnet restore
       - run: dotnet ef migrations add ${{ inputs.name }} --project StationeryAccounting
-      - uses: actions/upload-artifact@v4
-        with:
-          name: migrations
-          path: StationeryAccounting/Migrations
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add StationeryAccounting/Migrations
+          git commit -m "Этап 2: миграция ${{ inputs.name }}"
+          git push
