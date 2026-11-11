@@ -113,9 +113,10 @@ public class StockService
             int balance = GetBalance(product.Id);
             if (form.Quantity > balance)
             {
+                string unit = Units.Short(product.Unit);
                 return OperationResult.Fail(
-                    $"Недостаточно товара «{product.Name}»: на складе {balance} {product.Unit}, " +
-                    $"запрошено {form.Quantity} {product.Unit}");
+                    $"Недостаточно товара «{product.Name}»: на складе {balance} {unit}, " +
+                    $"запрошено {form.Quantity} {unit}");
             }
 
             _db.StockOperations.Add(new StockOperation
@@ -135,7 +136,7 @@ public class StockService
             string? warning = null;
             if (StockCalculator.NeedsRestock(newBalance, product.MinQuantity))
             {
-                warning = $"Внимание: остаток «{product.Name}» — {newBalance} {product.Unit}, " +
+                warning = $"Внимание: остаток «{product.Name}» — {newBalance} {Units.Short(product.Unit)}, " +
                           $"минимальный — {product.MinQuantity}. Товар требует пополнения.";
             }
             return OperationResult.Ok(warning);

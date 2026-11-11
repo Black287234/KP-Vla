@@ -121,7 +121,12 @@ def before(page, r):
     page.select_option("#EmployeeId", "1")
     page.fill("#Quantity", "0")
     page.click("button[type=submit]")
-    r["issue_zero"] = alerts(page)
+    still_on_form = "/Operations/Issue" in page.url and page.locator(".display-6").count() == 0
+    r["issue_zero"] = ("Браузер не отправил форму (поле «Количество» допускает минимум 1)" if still_on_form and not alerts(page)
+                       else alerts(page))
+    resp = page.request.post(BASE + "/api/operations/issue",
+                             data={"productId": 2, "quantity": 0, "date": TODAY, "employeeId": 1})
+    r["issue_zero_api"] = f"HTTP {resp.status}: {resp.text()[:200]}"
 
     # 12. Выдача ровно до минимума — успех с предупреждением (KT-005: остаток 16, минимум 3)
     page.goto(BASE + "/Operations/Issue?productId=5")
@@ -254,7 +259,7 @@ def main():
     r = load_results()
     with sync_playwright() as p:
         # Используем Google Chrome, который уже установлен на сервере GitHub
-        browser = p.chromium.launch(channel="chrome")
+        browser = p.chromium.launch(channel="chrome", args=["--lang=ru-RU"])
         page = browser.new_page(viewport={"width": 1280, "height": 800}, locale="ru-RU")
         if mode == "before":
             before(page, r)

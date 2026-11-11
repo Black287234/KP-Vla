@@ -21,7 +21,7 @@
         <div class="card text-center @(Model.NeedsRestock && !p.IsArchived ? "border-danger" : "border-success")">
             <div class="card-body">
                 <div class="text-muted">Текущий остаток</div>
-                <div class="display-6 fw-bold">@Model.Balance <small class="fs-5">@p.Unit</small></div>
+                <div class="display-6 fw-bold">@Model.Balance <small class="fs-5">@Units.Short(p.Unit)</small></div>
                 @if (p.IsArchived)
                 {
                     <span class="badge bg-secondary">В архиве</span>
