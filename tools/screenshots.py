@@ -250,7 +250,7 @@ def tests_image(page, text_file):
     page.set_content(
         "<html><body style='margin:0;background:#0c0c0c'>"
         "<pre style='font:13px Consolas,monospace;color:#d0d0d0;padding:16px;white-space:pre-wrap'>"
-        f"PS&gt; dotnet test\n{body}</pre></body></html>")
+        f"runner@github-actions:~/KP-Vla$ dotnet test\n{body}</pre></body></html>")
     shot(page, "19_dotnet_test")
 
 

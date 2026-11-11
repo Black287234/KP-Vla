@@ -1,0 +1,26 @@
+digraph Arch {
+  graph [rankdir=TB, fontname="Times New Roman", nodesep=0.4, ranksep=0.45, dpi=200];
+  node  [shape=box, fontname="Times New Roman", fontsize=12, style="rounded", width=3.2];
+  edge  [fontname="Times New Roman", fontsize=10];
+
+  Browser [label="Браузер пользователя\n(страницы Razor + Bootstrap)\nHTTP-клиент (.http, API)", shape=box, style="rounded,dashed"];
+  subgraph cluster_ui { label="Слой представления"; fontname="Times New Roman"; style=solid;
+    Controllers [label="Controllers\nProductsController, OperationsController,\nEmployeesController, Api/*"];
+    Views [label="Views + ViewModels\nстраницы, формы, фильтры"];
+  }
+  subgraph cluster_logic { label="Слой предметной логики"; fontname="Times New Roman";
+    Services [label="Services\nStockService (поступление, выдача, история, итоги)\nProductService, EmployeeService\nStockCalculator (расчёт остатка, контроль минимума)"];
+  }
+  subgraph cluster_data { label="Слой данных"; fontname="Times New Roman";
+    Data [label="Data\nAppDbContext (EF Core), DbSeeder, Migrations"];
+    Models [label="Models\nProduct, Employee, StockOperation, OperationType"];
+  }
+  DB [label="SQLite\nstationery.db", shape=cylinder, style=solid, width=1.6];
+
+  Browser -> Controllers [label=" HTTP-запрос "];
+  Controllers -> Views [label=" модель "];
+  Controllers -> Services [label=" вызов метода "];
+  Services -> Data [label=" LINQ-запросы "];
+  Data -> Models [dir=none, style=dotted];
+  Data -> DB [label=" SQL "];
+}

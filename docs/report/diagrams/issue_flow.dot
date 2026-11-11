@@ -1,0 +1,25 @@
+digraph Flow {
+  graph [rankdir=TB, fontname="Times New Roman", nodesep=0.5, ranksep=0.35, dpi=200];
+  node  [fontname="Times New Roman", fontsize=12, shape=box, width=3.2];
+  edge  [fontname="Times New Roman", fontsize=11];
+  S  [label="Начало: данные формы выдачи", shape=box, style=rounded];
+  C1 [label="Количество > 0\nи дата не в будущем?", shape=diamond, width=2.6];
+  C2 [label="Получатель указан?", shape=diamond, width=2.6];
+  C3 [label="Товар найден\nи не в архиве?", shape=diamond, width=2.6];
+  B  [label="Остаток = Σ поступлений − Σ выдач"];
+  C4 [label="Количество ≤ остаток?", shape=diamond, width=2.6];
+  W  [label="Сохранить операцию «Выдача»\nНовый остаток = остаток − количество"];
+  C5 [label="Новый остаток ≤ минимума?", shape=diamond, width=2.6];
+  OKW [label="Успех + предупреждение\n«Требует пополнения»", style=rounded];
+  OK  [label="Успех", style=rounded];
+  E  [label="Отказ: сообщение об ошибке\n(операция не сохраняется)", style=rounded];
+  S -> C1;
+  C1 -> C2 [label=" да "];  C1 -> E [label=" нет "];
+  C2 -> C3 [label=" да "];  C2 -> E [label=" нет "];
+  C3 -> B  [label=" да "];  C3 -> E [label=" нет "];
+  B -> C4;
+  C4 -> W [label=" да "];   C4 -> E [label=" нет "];
+  W -> C5;
+  C5 -> OKW [label=" да "]; C5 -> OK [label=" нет "];
+  {rank=same; C2; E}
+}

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StationeryAccounting.Data;
 using StationeryAccounting.Services;
@@ -5,7 +6,19 @@ using StationeryAccounting.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Подключаем MVC: контроллеры + представления (страницы Razor)
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Ошибки проверки данных в API — по-русски и в том же формате { error }, что и ошибки сервисов
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var messages = context.ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => string.IsNullOrEmpty(e.ErrorMessage) ? "Неверный формат данных" : e.ErrorMessage)
+                .ToList();
+            return new BadRequestObjectResult(new { error = string.Join("; ", messages) });
+        };
+    });
 
 // База данных SQLite. Строка подключения берётся из appsettings.json
 builder.Services.AddDbContext<AppDbContext>(options =>

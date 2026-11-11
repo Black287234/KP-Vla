@@ -1,0 +1,42 @@
+digraph ER {
+  graph [rankdir=LR, fontname="Times New Roman", nodesep=0.6, ranksep=1.1, dpi=200];
+  node  [shape=plain, fontname="Times New Roman", fontsize=12];
+  edge  [fontname="Times New Roman", fontsize=11, arrowhead=crow, arrowtail=tee, dir=both];
+
+  Product [label=<
+  <table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#e8e8e8"><b>Product (Товар)</b></td></tr>
+    <tr><td align="left">PK  Id : int</td></tr>
+    <tr><td align="left">Article : string (уникальный)</td></tr>
+    <tr><td align="left">Name : string</td></tr>
+    <tr><td align="left">Unit : string</td></tr>
+    <tr><td align="left">MinQuantity : int</td></tr>
+    <tr><td align="left">IsArchived : bool</td></tr>
+  </table>>];
+
+  StockOperation [label=<
+  <table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#e8e8e8"><b>StockOperation (Операция)</b></td></tr>
+    <tr><td align="left">PK  Id : int</td></tr>
+    <tr><td align="left">FK  ProductId : int</td></tr>
+    <tr><td align="left">Type : Поступление | Выдача</td></tr>
+    <tr><td align="left">Quantity : int (&gt; 0)</td></tr>
+    <tr><td align="left">Date : DateTime</td></tr>
+    <tr><td align="left">FK  EmployeeId : int? (для выдачи)</td></tr>
+    <tr><td align="left">Supplier : string?</td></tr>
+    <tr><td align="left">DocumentNumber : string?</td></tr>
+    <tr><td align="left">Comment : string?</td></tr>
+    <tr><td align="left">CreatedAt : DateTime</td></tr>
+  </table>>];
+
+  Employee [label=<
+  <table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#e8e8e8"><b>Employee (Сотрудник)</b></td></tr>
+    <tr><td align="left">PK  Id : int</td></tr>
+    <tr><td align="left">FullName : string</td></tr>
+    <tr><td align="left">Department : string</td></tr>
+  </table>>];
+
+  Product -> StockOperation [label=" 1 : N "];
+  Employee -> StockOperation [label=" 1 : N "];
+}

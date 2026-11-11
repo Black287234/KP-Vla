@@ -1,0 +1,20 @@
+digraph UC {
+  graph [rankdir=LR, fontname="Times New Roman", nodesep=0.25, ranksep=1.2, dpi=200];
+  node  [fontname="Times New Roman", fontsize=12];
+  edge  [arrowhead=none];
+  Actor [label="Кладовщик /\nофис-менеджер", shape=box, style="rounded", width=1.6];
+  subgraph cluster_sys { label="Модуль учёта движения канцелярских товаров"; fontname="Times New Roman"; fontsize=13;
+    node [shape=ellipse, width=3.4];
+    U1 [label="Вести справочник товаров\n(добавить, изменить, архивировать)"];
+    U2 [label="Найти товар по наименованию\nили артикулу"];
+    U3 [label="Оформить поступление"];
+    U4 [label="Оформить выдачу сотруднику"];
+    U5 [label="Проверить остаток\n(«include»)"];
+    U6 [label="Просмотреть товары\nниже минимума"];
+    U7 [label="Просмотреть историю движения\nс фильтрами"];
+    U8 [label="Получить итоги за период"];
+    U9 [label="Вести справочник сотрудников"];
+  }
+  Actor -> {U1 U2 U3 U4 U6 U7 U8 U9};
+  U4 -> U5 [style=dashed, arrowhead=vee, label=" «include» ", fontname="Times New Roman", fontsize=10];
+}
