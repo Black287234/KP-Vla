@@ -1,0 +1,27 @@
+@model Product
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<h2 class="mb-3">Карточка товара</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Article)</dt>
+    <dd class="col-sm-9">@Model.Article</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Name)</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Unit)</dt>
+    <dd class="col-sm-9">@Model.Unit</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.MinQuantity)</dt>
+    <dd class="col-sm-9">@Model.MinQuantity</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.IsArchived)</dt>
+    <dd class="col-sm-9">@(Model.IsArchived ? "Да" : "Нет")</dd>
+</dl>
+
+<p class="text-muted">Текущий остаток и история движения появятся на следующих этапах.</p>
+
+<a class="btn btn-secondary" asp-action="Index">К списку</a>

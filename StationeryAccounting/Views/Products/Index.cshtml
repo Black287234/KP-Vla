@@ -1,0 +1,45 @@
+@model List<Product>
+@{
+    ViewData["Title"] = "Товары";
+}
+
+<h2 class="mb-3">Справочник товаров</h2>
+
+<p class="text-muted">Всего записей: @Model.Count</p>
+
+<table class="table table-striped table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Артикул</th>
+            <th>Наименование</th>
+            <th>Ед. изм.</th>
+            <th class="text-end">Мин. остаток</th>
+            <th>Состояние</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr class="@(p.IsArchived ? "text-muted" : "")">
+                <td>@p.Article</td>
+                <td>@p.Name</td>
+                <td>@p.Unit</td>
+                <td class="text-end">@p.MinQuantity</td>
+                <td>
+                    @if (p.IsArchived)
+                    {
+                        <span class="badge bg-secondary">В архиве</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Активен</span>
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@p.Id">Карточка</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

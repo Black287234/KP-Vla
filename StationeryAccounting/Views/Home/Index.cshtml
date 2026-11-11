@@ -1,0 +1,32 @@
+@{
+    ViewData["Title"] = "Главная";
+}
+
+<h1 class="mb-3">Модуль учёта движения канцелярских товаров</h1>
+
+<p class="lead">
+    Модуль помогает кладовщику или офис-менеджеру вести справочник канцтоваров,
+    оформлять поступления и выдачу сотрудникам, видеть текущий остаток
+    и вовремя замечать товары, которые пора пополнить.
+</p>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Справочник товаров</h5>
+                <p class="card-text">Список канцелярских товаров с артикулом, единицей измерения и минимальным остатком.</p>
+                <a class="btn btn-primary" asp-controller="Products" asp-action="Index">Открыть</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">API (JSON)</h5>
+                <p class="card-text">Те же данные в формате JSON по GET-запросу <code>/api/products</code>.</p>
+                <a class="btn btn-outline-primary" href="/api/products" target="_blank">Открыть</a>
+            </div>
+        </div>
+    </div>
+</div>
