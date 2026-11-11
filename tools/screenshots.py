@@ -253,7 +253,8 @@ def main():
     mode = sys.argv[1]
     r = load_results()
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        # Используем Google Chrome, который уже установлен на сервере GitHub
+        browser = p.chromium.launch(channel="chrome")
         page = browser.new_page(viewport={"width": 1280, "height": 800}, locale="ru-RU")
         if mode == "before":
             before(page, r)
