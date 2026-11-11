@@ -6,27 +6,41 @@
 
 <p class="lead">
     Модуль помогает кладовщику или офис-менеджеру вести справочник канцтоваров,
-    оформлять поступления и выдачу сотрудникам, видеть текущий остаток
-    и вовремя замечать товары, которые пора пополнить.
+    оформлять поступления от поставщиков и выдачу сотрудникам. Текущий остаток
+    считается автоматически по истории операций, а товары с остатком не выше
+    минимального выделяются как «Требует пополнения».
 </p>
 
 <div class="row g-3">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title">Справочник товаров</h5>
-                <p class="card-text">Список канцелярских товаров с артикулом, единицей измерения и минимальным остатком.</p>
+                <p class="card-text">Поиск по наименованию и артикулу, текущий остаток, архив.</p>
                 <a class="btn btn-primary" asp-controller="Products" asp-action="Index">Открыть</a>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card h-100">
             <div class="card-body">
-                <h5 class="card-title">API (JSON)</h5>
-                <p class="card-text">Те же данные в формате JSON по GET-запросу <code>/api/products</code>.</p>
-                <a class="btn btn-outline-primary" href="/api/products" target="_blank">Открыть</a>
+                <h5 class="card-title">Поступление и выдача</h5>
+                <p class="card-text">Оформление операций. Выдать больше, чем есть на складе, нельзя.</p>
+                <a class="btn btn-success" asp-controller="Operations" asp-action="Receipt">Поступление</a>
+                <a class="btn btn-warning" asp-controller="Operations" asp-action="Issue">Выдача</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">История и итоги</h5>
+                <p class="card-text">История движения с фильтрами, итоги поступлений и выдач за период.</p>
+                <a class="btn btn-outline-primary" asp-controller="Operations" asp-action="Index">История</a>
+                <a class="btn btn-outline-primary" asp-controller="Operations" asp-action="Totals">Итоги</a>
             </div>
         </div>
     </div>
 </div>
+
+<p class="mt-4 text-muted">API для проверки HTTP-запросами: <code>/api/products</code>, <code>/api/operations</code>.</p>

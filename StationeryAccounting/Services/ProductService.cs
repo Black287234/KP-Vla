@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using StationeryAccounting.Data;
 using StationeryAccounting.Models;
+using StationeryAccounting.ViewModels;
 
 namespace StationeryAccounting.Services;
 
@@ -24,6 +25,62 @@ public class ProductService
             .AsNoTracking()          // только чтение — EF не нужно следить за изменениями
             .OrderBy(p => p.Article)
             .ToList();
+    }
+
+    /// <summary>
+    /// Справочник с поиском и фильтрами. У каждой строки — рассчитанный остаток
+    /// и признак «Требует пополнения».
+    /// </summary>
+    public List<ProductListItem> Search(ProductFilter filter)
+    {
+        var products = _db.Products.AsNoTracking().OrderBy(p => p.Article).ToList();
+
+        // Все операции группируем по товару и считаем остаток по общей формуле
+        var balances = _db.StockOperations
+            .AsNoTracking()
+            .ToList()
+            .GroupBy(o => o.ProductId)
+            .ToDictionary(g => g.Key, g => StockCalculator.CalculateBalance(g));
+
+        var items = products.Select(p =>
+        {
+            int balance = balances.TryGetValue(p.Id, out var b) ? b : 0;  // нет операций — остаток 0
+            return new ProductListItem
+            {
+                Id = p.Id,
+                Article = p.Article,
+                Name = p.Name,
+                Unit = p.Unit,
+                MinQuantity = p.MinQuantity,
+                IsArchived = p.IsArchived,
+                Balance = balance,
+                NeedsRestock = StockCalculator.NeedsRestock(balance, p.MinQuantity)
+            };
+        });
+
+        // Поиск по наименованию или артикулу без учёта регистра.
+        // Делаем его в памяти: в SQLite сравнение без учёта регистра
+        // работает только для латиницы, а наименования у нас русские.
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            string text = filter.Search.Trim();
+            items = items.Where(i =>
+                i.Name.Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                i.Article.Contains(text, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!filter.ShowArchived)
+        {
+            items = items.Where(i => !i.IsArchived);
+        }
+
+        if (filter.BelowMinOnly)
+        {
+            // Архивные товары не пополняют, поэтому в «Ниже минимума» их не показываем
+            items = items.Where(i => i.NeedsRestock && !i.IsArchived);
+        }
+
+        return items.ToList();
     }
 
     /// <summary>Один товар по Id или null, если такого нет.</summary>

@@ -1,49 +1,95 @@
-@model List<Product>
+@using StationeryAccounting.ViewModels
+@model ProductListViewModel
 @{
-    ViewData["Title"] = "Товары";
+    ViewData["Title"] = Model.Filter.BelowMinOnly ? "Ниже минимума" : "Товары";
+    int restockCount = Model.Items.Count(i => i.NeedsRestock && !i.IsArchived);
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Справочник товаров</h2>
-    <a class="btn btn-primary" asp-action="Create">Добавить товар</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h2 class="mb-0">@(Model.Filter.BelowMinOnly ? "Товары ниже минимума" : "Справочник товаров")</h2>
+    <div class="d-flex gap-2">
+        <a class="btn btn-success" asp-controller="Operations" asp-action="Receipt">+ Поступление</a>
+        <a class="btn btn-warning" asp-controller="Operations" asp-action="Issue">− Выдача</a>
+        <a class="btn btn-primary" asp-action="Create">Добавить товар</a>
+    </div>
 </div>
 
-<p class="text-muted">Всего записей: @Model.Count</p>
+@* Поиск и фильтры — обычная GET-форма, параметры попадают в адрес страницы *@
+<form method="get" asp-action="Index" class="row g-2 align-items-center mb-3">
+    <div class="col-md-5">
+        <input name="Search" value="@Model.Filter.Search" class="form-control" placeholder="Поиск по наименованию или артикулу" />
+    </div>
+    <div class="col-auto form-check ms-2">
+        <input class="form-check-input" type="checkbox" name="BelowMinOnly" value="true" id="belowMin" checked="@Model.Filter.BelowMinOnly" />
+        <label class="form-check-label" for="belowMin">Только ниже минимума</label>
+    </div>
+    <div class="col-auto form-check ms-2">
+        <input class="form-check-input" type="checkbox" name="ShowArchived" value="true" id="showArchived" checked="@Model.Filter.ShowArchived" />
+        <label class="form-check-label" for="showArchived">Показывать архивные</label>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Найти</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">Сбросить</a>
+    </div>
+</form>
 
-<table class="table table-striped table-hover align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Артикул</th>
-            <th>Наименование</th>
-            <th>Ед. изм.</th>
-            <th class="text-end">Мин. остаток</th>
-            <th>Состояние</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model)
-        {
-            <tr class="@(p.IsArchived ? "text-muted" : "")">
-                <td>@p.Article</td>
-                <td>@p.Name</td>
-                <td>@p.Unit</td>
-                <td class="text-end">@p.MinQuantity</td>
-                <td>
-                    @if (p.IsArchived)
-                    {
-                        <span class="badge bg-secondary">В архиве</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success">Активен</span>
-                    }
-                </td>
-                <td class="text-nowrap">
-                    <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@p.Id">Карточка</a>
-                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@p.Id">Изменить</a>
-                </td>
+<p class="text-muted">
+    Найдено: @Model.Items.Count.
+    @if (restockCount > 0)
+    {
+        <span class="text-danger fw-semibold">Требуют пополнения: @restockCount</span>
+    }
+</p>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info">Ничего не найдено. Измените условия поиска.</div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Артикул</th>
+                <th>Наименование</th>
+                <th>Ед. изм.</th>
+                <th class="text-end">Остаток</th>
+                <th class="text-end">Мин. остаток</th>
+                <th>Состояние</th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.Items)
+            {
+                // Выделяем цветом товары, которые пора пополнить
+                string rowClass = p.IsArchived ? "text-muted" : (p.NeedsRestock ? "table-danger" : "");
+                <tr class="@rowClass">
+                    <td>@p.Article</td>
+                    <td>@p.Name</td>
+                    <td>@p.Unit</td>
+                    <td class="text-end fw-semibold">@p.Balance</td>
+                    <td class="text-end">@p.MinQuantity</td>
+                    <td>
+                        @if (p.IsArchived)
+                        {
+                            <span class="badge bg-secondary">В архиве</span>
+                        }
+                        else if (p.NeedsRestock)
+                        {
+                            <span class="badge bg-danger">Требует пополнения</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">В наличии</span>
+                        }
+                    </td>
+                    <td class="text-nowrap">
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@p.Id">Карточка</a>
+                        <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@p.Id">Изменить</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

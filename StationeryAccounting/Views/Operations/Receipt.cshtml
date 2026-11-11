@@ -1,0 +1,49 @@
+@using StationeryAccounting.ViewModels
+@model ReceiptForm
+@{
+    ViewData["Title"] = "Поступление товара";
+}
+
+<h2 class="mb-3">Поступление товара</h2>
+
+<form asp-action="Receipt" method="post" class="col-lg-7">
+    <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="ProductId" class="form-label"></label>
+        <select asp-for="ProductId" class="form-select" asp-items="@(new SelectList(ViewBag.Products, "Value", "Text", Model.ProductId))">
+            <option value="0">— выберите товар —</option>
+        </select>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Quantity" class="form-label"></label>
+            <input asp-for="Quantity" class="form-control" type="number" min="1" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Date" class="form-label"></label>
+            <input asp-for="Date" class="form-control" type="date" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Supplier" class="form-label"></label>
+            <input asp-for="Supplier" class="form-control" placeholder="ООО «...»" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="DocumentNumber" class="form-label"></label>
+            <input asp-for="DocumentNumber" class="form-control" placeholder="ТН-0000" />
+        </div>
+    </div>
+    <div class="form-text mb-3">Нужно заполнить хотя бы одно: поставщика или номер документа.</div>
+
+    <div class="mb-3">
+        <label asp-for="Comment" class="form-label"></label>
+        <input asp-for="Comment" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Оформить поступление</button>
+    <a class="btn btn-secondary" asp-controller="Products" asp-action="Index">Отмена</a>
+</form>

@@ -18,9 +18,23 @@
                         <a class="nav-link" asp-controller="Products" asp-action="Index">Товары</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" asp-controller="Products" asp-action="BelowMin">Ниже минимума</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Operations" asp-action="Receipt">Поступление</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Operations" asp-action="Issue">Выдача</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Operations" asp-action="Index">История</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Operations" asp-action="Totals">Итоги</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" asp-controller="Employees" asp-action="Index">Сотрудники</a>
                     </li>
-                    @await RenderSectionAsync("ExtraMenu", required: false)
                 </ul>
             </div>
         </nav>

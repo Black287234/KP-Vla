@@ -1,0 +1,56 @@
+@using StationeryAccounting.ViewModels
+@model HistoryViewModel
+@{
+    ViewData["Title"] = "История движения";
+    var f = Model.Filter;
+}
+
+<h2 class="mb-3">История движения</h2>
+
+<form method="get" asp-action="Index" class="row g-2 align-items-end mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Товар</label>
+        <select name="ProductId" class="form-select" asp-items="@(new SelectList(ViewBag.Products, "Value", "Text", f.ProductId))">
+            <option value="">— все —</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Тип операции</label>
+        <select name="Type" class="form-select" asp-items="@(new SelectList(ViewBag.Types, "Value", "Text", f.Type?.ToString()))">
+            <option value="">— все —</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Сотрудник</label>
+        <select name="EmployeeId" class="form-select" asp-items="@(new SelectList(ViewBag.Employees, "Value", "Text", f.EmployeeId))">
+            <option value="">— все —</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">С даты</label>
+        <input type="date" name="From" value="@f.From?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">По дату</label>
+        <input type="date" name="To" value="@f.To?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-outline-primary">Показать</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">Сбросить</a>
+    </div>
+</form>
+
+<p class="text-muted">
+    Найдено операций: @Model.Operations.Count.
+    Поступило: <span class="text-success fw-semibold">+@Model.TotalReceived</span>,
+    выдано: <span class="text-danger fw-semibold">−@Model.TotalIssued</span>.
+</p>
+
+@if (Model.Operations.Count == 0)
+{
+    <div class="alert alert-info">Операций по выбранным условиям нет.</div>
+}
+else
+{
+    <partial name="_OperationsTable" model="Model.Operations" />
+}

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StationeryAccounting.Models;
 using StationeryAccounting.Services;
+using StationeryAccounting.ViewModels;
 
 namespace StationeryAccounting.Controllers;
 
@@ -11,20 +12,33 @@ namespace StationeryAccounting.Controllers;
 public class ProductsController : Controller
 {
     private readonly ProductService _productService;
+    private readonly StockService _stockService;
 
-    // Сервис приходит через конструктор (его зарегистрировали в Program.cs)
-    public ProductsController(ProductService productService)
+    // Сервисы приходят через конструктор (их зарегистрировали в Program.cs)
+    public ProductsController(ProductService productService, StockService stockService)
     {
         _productService = productService;
+        _stockService = stockService;
     }
 
-    // GET /Products — список товаров
-    public IActionResult Index()
+    // GET /Products?Search=ручка&BelowMinOnly=true — справочник с поиском и фильтром
+    public IActionResult Index(ProductFilter filter)
     {
-        return View(_productService.GetAll());
+        var model = new ProductListViewModel
+        {
+            Filter = filter,
+            Items = _productService.Search(filter)
+        };
+        return View(model);
     }
 
-    // GET /Products/Details/5 — карточка товара
+    // GET /Products/BelowMin — отдельная страница «Ниже минимума»
+    public IActionResult BelowMin()
+    {
+        return RedirectToAction(nameof(Index), new { BelowMinOnly = true });
+    }
+
+    // GET /Products/Details/5 — карточка товара: остаток и история именно по нему
     public IActionResult Details(int id)
     {
         var product = _productService.GetById(id);
@@ -32,7 +46,16 @@ public class ProductsController : Controller
         {
             return NotFoundPage();
         }
-        return View(product);
+
+        int balance = _stockService.GetBalance(id);
+        var model = new ProductCardViewModel
+        {
+            Product = product,
+            Balance = balance,
+            NeedsRestock = StockCalculator.NeedsRestock(balance, product.MinQuantity),
+            History = _stockService.GetHistory(new HistoryFilter { ProductId = id })
+        };
+        return View(model);
     }
 
     // GET /Products/Create — пустая форма

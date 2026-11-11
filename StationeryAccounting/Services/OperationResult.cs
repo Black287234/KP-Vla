@@ -14,6 +14,9 @@ public class OperationResult
     /// <summary>Предупреждение при успешном действии (например, остаток ниже минимума).</summary>
     public string? Warning { get; private set; }
 
+    /// <summary>True, если ошибка в том, что запись не найдена (для ответа 404 в API).</summary>
+    public bool IsNotFound { get; private set; }
+
     public static OperationResult Ok(string? warning = null)
     {
         return new OperationResult { Success = true, Warning = warning };
@@ -22,5 +25,10 @@ public class OperationResult
     public static OperationResult Fail(string error)
     {
         return new OperationResult { Success = false, Error = error };
+    }
+
+    public static OperationResult NotFound(string error)
+    {
+        return new OperationResult { Success = false, Error = error, IsNotFound = true };
     }
 }

@@ -14,6 +14,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Сервисы с предметной логикой. Scoped — один объект на один HTTP-запрос
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<EmployeeService>();
+builder.Services.AddScoped<StockService>();
 
 var app = builder.Build();
 

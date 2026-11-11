@@ -1,0 +1,63 @@
+@using StationeryAccounting.ViewModels
+@model TotalsViewModel
+@{
+    ViewData["Title"] = "Итоги за период";
+}
+
+<h2 class="mb-3">Итоги за период</h2>
+
+<form method="get" asp-action="Totals" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label class="form-label">С даты</label>
+        <input type="date" name="from" value="@Model.From.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">По дату</label>
+        <input type="date" name="to" value="@Model.To.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Показать</button>
+    </div>
+</form>
+
+@if (Model.Error != null)
+{
+    <div class="alert alert-danger">@Model.Error</div>
+}
+else if (Model.Rows.Count == 0)
+{
+    <div class="alert alert-info">За период с @Model.From.ToString("dd.MM.yyyy") по @Model.To.ToString("dd.MM.yyyy") операций не было.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Артикул</th>
+                <th>Наименование</th>
+                <th>Ед. изм.</th>
+                <th class="text-end">Поступило</th>
+                <th class="text-end">Выдано</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.Rows)
+            {
+                <tr>
+                    <td>@r.Article</td>
+                    <td>@r.Name</td>
+                    <td>@r.Unit</td>
+                    <td class="text-end text-success">+@r.Received</td>
+                    <td class="text-end text-danger">−@r.Issued</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr class="fw-bold">
+                <td colspan="3">Итого (в единицах учёта)</td>
+                <td class="text-end">+@Model.TotalReceived</td>
+                <td class="text-end">−@Model.TotalIssued</td>
+            </tr>
+        </tfoot>
+    </table>
+}

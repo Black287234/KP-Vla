@@ -1,40 +1,81 @@
-@model Product
+@using StationeryAccounting.ViewModels
+@model ProductCardViewModel
 @{
-    ViewData["Title"] = Model.Name;
+    var p = Model.Product;
+    ViewData["Title"] = p.Name;
 }
 
-<h2 class="mb-3">Карточка товара</h2>
-
-<dl class="row">
-    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Article)</dt>
-    <dd class="col-sm-9">@Model.Article</dd>
-
-    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Name)</dt>
-    <dd class="col-sm-9">@Model.Name</dd>
-
-    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Unit)</dt>
-    <dd class="col-sm-9">@Model.Unit</dd>
-
-    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.MinQuantity)</dt>
-    <dd class="col-sm-9">@Model.MinQuantity</dd>
-
-    <dt class="col-sm-3">Состояние</dt>
-    <dd class="col-sm-9">@(Model.IsArchived ? "В архиве" : "Активен")</dd>
-</dl>
-
-<div class="d-flex flex-wrap gap-2">
-    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Изменить</a>
-    @if (Model.IsArchived)
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h2 class="mb-0">@p.Name</h2>
+    @if (!p.IsArchived)
     {
-        <form asp-action="Restore" asp-route-id="@Model.Id" method="post">
-            <button type="submit" class="btn btn-outline-success">Вернуть из архива</button>
-        </form>
+        <div class="d-flex gap-2">
+            <a class="btn btn-success" asp-controller="Operations" asp-action="Receipt" asp-route-productId="@p.Id">+ Поступление</a>
+            <a class="btn btn-warning" asp-controller="Operations" asp-action="Issue" asp-route-productId="@p.Id">− Выдача</a>
+        </div>
     }
-    else
-    {
-        <form asp-action="Archive" asp-route-id="@Model.Id" method="post">
-            <button type="submit" class="btn btn-outline-secondary">В архив</button>
-        </form>
-    }
-    <a class="btn btn-secondary" asp-action="Index">К списку</a>
 </div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card text-center @(Model.NeedsRestock && !p.IsArchived ? "border-danger" : "border-success")">
+            <div class="card-body">
+                <div class="text-muted">Текущий остаток</div>
+                <div class="display-6 fw-bold">@Model.Balance <small class="fs-5">@p.Unit</small></div>
+                @if (p.IsArchived)
+                {
+                    <span class="badge bg-secondary">В архиве</span>
+                }
+                else if (Model.NeedsRestock)
+                {
+                    <span class="badge bg-danger">Требует пополнения</span>
+                }
+                else
+                {
+                    <span class="badge bg-success">В наличии</span>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.Product.Article)</dt>
+            <dd class="col-sm-8">@p.Article</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.Product.Unit)</dt>
+            <dd class="col-sm-8">@p.Unit</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.Product.MinQuantity)</dt>
+            <dd class="col-sm-8">@p.MinQuantity</dd>
+
+            <dt class="col-sm-4">Состояние</dt>
+            <dd class="col-sm-8">@(p.IsArchived ? "В архиве (операции запрещены)" : "Активен")</dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            <a class="btn btn-outline-primary btn-sm" asp-action="Edit" asp-route-id="@p.Id">Изменить</a>
+            @if (p.IsArchived)
+            {
+                <form asp-action="Restore" asp-route-id="@p.Id" method="post">
+                    <button type="submit" class="btn btn-outline-success btn-sm">Вернуть из архива</button>
+                </form>
+            }
+            else
+            {
+                <form asp-action="Archive" asp-route-id="@p.Id" method="post">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">В архив</button>
+                </form>
+            }
+            <a class="btn btn-secondary btn-sm" asp-action="Index">К списку</a>
+        </div>
+    </div>
+</div>
+
+<h4>История движения</h4>
+@if (Model.History.Count == 0)
+{
+    <div class="alert alert-info">По этому товару ещё не было операций. Остаток — 0.</div>
+}
+else
+{
+    <partial name="_OperationsTable" model="Model.History" />
+}

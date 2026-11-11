@@ -1,0 +1,45 @@
+@using StationeryAccounting.ViewModels
+@model IssueForm
+@{
+    ViewData["Title"] = "Выдача товара";
+}
+
+<h2 class="mb-3">Выдача товара сотруднику</h2>
+
+<form asp-action="Issue" method="post" class="col-lg-7">
+    <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="ProductId" class="form-label"></label>
+        <select asp-for="ProductId" class="form-select" asp-items="@(new SelectList(ViewBag.Products, "Value", "Text", Model.ProductId))">
+            <option value="0">— выберите товар —</option>
+        </select>
+        <div class="form-text">Текущий остаток видно в справочнике и в карточке товара. Выдать больше остатка нельзя.</div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="EmployeeId" class="form-label"></label>
+        <select asp-for="EmployeeId" class="form-select" asp-items="@(new SelectList(ViewBag.Employees, "Value", "Text", Model.EmployeeId))">
+            <option value="">— выберите сотрудника —</option>
+        </select>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Quantity" class="form-label"></label>
+            <input asp-for="Quantity" class="form-control" type="number" min="1" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Date" class="form-label"></label>
+            <input asp-for="Date" class="form-control" type="date" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Comment" class="form-label"></label>
+        <input asp-for="Comment" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-warning">Оформить выдачу</button>
+    <a class="btn btn-secondary" asp-controller="Products" asp-action="Index">Отмена</a>
+</form>

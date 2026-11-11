@@ -1,0 +1,35 @@
+@model List<StockOperation>
+
+@* Таблица операций — общая для истории движения и карточки товара *@
+<table class="table table-sm table-striped align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Дата</th>
+            <th>Тип</th>
+            <th>Товар</th>
+            <th class="text-end">Кол-во</th>
+            <th>Получатель / поставщик</th>
+            <th>Документ</th>
+            <th>Комментарий</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            bool isReceipt = o.Type == OperationType.Receipt;
+            <tr>
+                <td class="text-nowrap">@o.Date.ToString("dd.MM.yyyy")</td>
+                <td>
+                    <span class="badge @(isReceipt ? "bg-success" : "bg-warning text-dark")">
+                        @(isReceipt ? "Поступление" : "Выдача")
+                    </span>
+                </td>
+                <td>@o.Product?.Name</td>
+                <td class="text-end fw-semibold">@(isReceipt ? "+" : "−")@o.Quantity</td>
+                <td>@(isReceipt ? o.Supplier : o.Employee?.FullName)</td>
+                <td>@o.DocumentNumber</td>
+                <td>@o.Comment</td>
+            </tr>
+        }
+    </tbody>
+</table>
