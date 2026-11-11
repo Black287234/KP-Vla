@@ -3,7 +3,10 @@
     ViewData["Title"] = "Товары";
 }
 
-<h2 class="mb-3">Справочник товаров</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Справочник товаров</h2>
+    <a class="btn btn-primary" asp-action="Create">Добавить товар</a>
+</div>
 
 <p class="text-muted">Всего записей: @Model.Count</p>
 
@@ -36,8 +39,9 @@
                         <span class="badge bg-success">Активен</span>
                     }
                 </td>
-                <td>
+                <td class="text-nowrap">
                     <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@p.Id">Карточка</a>
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@p.Id">Изменить</a>
                 </td>
             </tr>
         }

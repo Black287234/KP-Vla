@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace StationeryAccounting.Models;
 
 /// <summary>
 /// Товар (канцелярская позиция) из справочника.
-/// Остаток здесь НЕ хранится: на следующих этапах он будет считаться
-/// по операциям поступления и выдачи.
+/// Текущий остаток здесь НЕ хранится — он всегда считается
+/// по операциям: сумма поступлений минус сумма выдач.
 /// </summary>
 public class Product
 {
@@ -23,6 +24,7 @@ public class Product
 
     [Display(Name = "Единица измерения")]
     [Required(ErrorMessage = "Укажите единицу измерения")]
+    [StringLength(20)]
     public string Unit { get; set; } = "шт.";
 
     [Display(Name = "Минимальный остаток")]
@@ -32,4 +34,9 @@ public class Product
     // Товар не удаляем, а архивируем, чтобы не потерять историю движения
     [Display(Name = "В архиве")]
     public bool IsArchived { get; set; }
+
+    // Навигационное свойство: все операции по этому товару (связь 1 — N).
+    // JsonIgnore — чтобы API не уходило в бесконечную вложенность товар → операция → товар
+    [JsonIgnore]
+    public List<StockOperation> Operations { get; set; } = new();
 }

@@ -1,0 +1,31 @@
+@model Product
+
+@* Общая часть формы для добавления и редактирования товара *@
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+<input type="hidden" asp-for="Id" />
+
+<div class="mb-3">
+    <label asp-for="Article" class="form-label"></label>
+    <input asp-for="Article" class="form-control" placeholder="Например, KT-013" />
+    <span asp-validation-for="Article" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Name" class="form-label"></label>
+    <input asp-for="Name" class="form-control" />
+    <span asp-validation-for="Name" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Unit" class="form-label"></label>
+    <select asp-for="Unit" class="form-select" asp-items="@(new SelectList(Units.All))"></select>
+    <span asp-validation-for="Unit" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="MinQuantity" class="form-label"></label>
+    <input asp-for="MinQuantity" class="form-control" type="number" min="0" />
+    <div class="form-text">Если остаток станет меньше или равен этому числу, товар будет помечен «Требует пополнения».</div>
+    <span asp-validation-for="MinQuantity" class="text-danger"></span>
+</div>

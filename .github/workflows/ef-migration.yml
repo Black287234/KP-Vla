@@ -1,0 +1,26 @@
+# Вспомогательный workflow: создаёт миграцию EF Core на сервере GitHub
+# (запускается вручную, результат — артефакт с папкой Migrations)
+name: ef-migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Имя миграции'
+        required: true
+        default: 'InitialCreate'
+
+jobs:
+  migration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet tool install --global dotnet-ef --version 10.0.0
+      - run: dotnet ef migrations add ${{ inputs.name }} --project StationeryAccounting
+      - uses: actions/upload-artifact@v4
+        with:
+          name: migrations
+          path: StationeryAccounting/Migrations

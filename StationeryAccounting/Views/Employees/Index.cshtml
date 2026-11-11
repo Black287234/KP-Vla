@@ -1,0 +1,31 @@
+@model List<Employee>
+@{
+    ViewData["Title"] = "Сотрудники";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Сотрудники</h2>
+    <a class="btn btn-primary" asp-action="Create">Добавить сотрудника</a>
+</div>
+
+<table class="table table-striped table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>ФИО</th>
+            <th>Отдел</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var e in Model)
+        {
+            <tr>
+                <td>@e.FullName</td>
+                <td>@e.Department</td>
+                <td class="text-nowrap">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@e.Id">Изменить</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
