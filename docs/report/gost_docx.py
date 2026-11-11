@@ -153,10 +153,11 @@ def auto_widths(rows, total=17.0):
     mins, weights = [], []
     for j in range(n):
         cells = [r[j] if j < len(r) else "" for r in rows]
-        longest = max((len(w) for c in cells for w in c.replace("\\n", " ").split()), default=1)
-        mins.append(min(5.0, longest * 0.24 + 0.6))
-        avg = sum(len(c) for c in cells) / len(cells)
-        weights.append(avg ** 0.8 + 1)
+        body_longest = max((len(w) for c in cells[1:] for w in c.replace("\\n", " ").split()), default=1)
+        head_longest = max((len(w) for w in cells[0].split()), default=1)
+        mins.append(min(3.0, max(body_longest * 0.19 + 0.4, head_longest * 0.17 + 0.3)))
+        avg = sum(len(c) for c in cells[1:]) / max(1, len(cells) - 1)
+        weights.append(avg + 1)
     rest = max(0.0, total - sum(mins))
     s = sum(weights)
     widths = [mins[j] + rest * weights[j] / s for j in range(n)]
@@ -365,6 +366,18 @@ class NoteBuilder:
                     else:
                         self._inline(p, line, font_size)
         repeat_header(t.rows[0])
+        # строки не разрываются между страницами; небольшая таблица целиком держится вместе
+        # с подписью, у большой с подписью остаются хотя бы шапка и первая строка
+        keep_rows = len(t.rows) - 1 if len(t.rows) <= 12 else 2
+        for ri, row in enumerate(t.rows):
+            tr_pr = row._tr.get_or_add_trPr()
+            cs = OxmlElement("w:cantSplit")
+            cs.set(qn("w:val"), "true")
+            tr_pr.append(cs)
+            if ri < keep_rows:
+                for c in row.cells:
+                    for cp in c.paragraphs:
+                        cp.paragraph_format.keep_with_next = True
         if not widths:
             widths = auto_widths(rows)
         t.autofit = False
@@ -382,7 +395,7 @@ class NoteBuilder:
         fmt(after, indent=0, spacing=1)
         return self.table_no
 
-    def figure(self, path, title, width_cm=15):
+    def figure(self, path, title, width_cm=15, max_h_cm=12):
         self.figure_no += 1
         full = (self.base / path) if not Path(path).is_absolute() else Path(path)
         p = self.doc.add_paragraph()
@@ -391,8 +404,9 @@ class NoteBuilder:
             from PIL import Image
             with Image.open(full) as im:
                 w, h = im.size
-            # не выше 21 см, чтобы рисунок помещался на странице вместе с подписью
-            width = min(width_cm, 21 * w / h)
+            # высота не больше 12 см: рисунок с подписью помещается в оставшуюся часть страницы
+            # и не «уезжает» на следующую, оставляя пустое место
+            width = min(width_cm, max_h_cm * w / h)
             p.add_run().add_picture(str(full), width=Cm(width))
         else:
             set_font(p.add_run(f"[Место для рисунка: {path}]"), 14)
@@ -453,7 +467,7 @@ class NoteBuilder:
             elif line.startswith(":figure "):
                 path, title = [s.strip() for s in line[8:].split("|", 1)]
                 # снимки экрана чуть уже схем, чтобы записка не разрасталась
-                self.figure(path, title, 13.5 if "screenshots" in path else 15)
+                self.figure(path, title, 13.5 if "screenshots" in path else 15, 11 if "screenshots" in path else 12.5)
             elif line.startswith(":formula "):
                 f, n = [s.strip() for s in line[9:].rsplit("|", 1)]
                 self.formula(f, n)
