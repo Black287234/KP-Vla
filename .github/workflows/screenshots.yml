@@ -1,0 +1,59 @@
+# Прогон ручных проверок в браузере и снятие скриншотов для пояснительной записки.
+# Запускается вручную; скриншоты и фактические результаты сохраняются в docs/screenshots.
+name: screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright
+        run: |
+          pip install playwright==1.48.0
+          python -m playwright install --with-deps chromium
+          sudo apt-get install -y fonts-dejavu fonts-liberation > /dev/null
+      - name: Build
+        run: dotnet build -c Release
+      - name: Tests
+        run: |
+          dotnet test --no-build -c Release --logger "console;verbosity=normal" 2>&1 | tee test-output.txt
+      - name: Run app and check (before restart)
+        run: |
+          rm -f StationeryAccounting/stationery.db
+          cd StationeryAccounting
+          nohup dotnet run --no-build -c Release --urls http://localhost:5080 > ../app1.log 2>&1 &
+          cd ..
+          for i in $(seq 1 60); do curl -s http://localhost:5080 > /dev/null && break; sleep 1; done
+          python tools/screenshots.py before
+          pkill -f StationeryAccounting || true
+          sleep 3
+      - name: Restart app and check (after restart)
+        run: |
+          cd StationeryAccounting
+          nohup dotnet run --no-build -c Release --urls http://localhost:5080 > ../app2.log 2>&1 &
+          cd ..
+          for i in $(seq 1 60); do curl -s http://localhost:5080 > /dev/null && break; sleep 1; done
+          python tools/screenshots.py after
+          python tools/screenshots.py tests test-output.txt
+          pkill -f StationeryAccounting || true
+          cp test-output.txt docs/screenshots/test-output.txt
+          cat app1.log | head -40
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add docs/screenshots
+          git commit -m "Скриншоты и фактические результаты проверок [skip ci]" || echo "нет изменений"
+          git push

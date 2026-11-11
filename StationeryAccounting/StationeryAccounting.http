@@ -1,0 +1,64 @@
+### Ручные проверки API (открыть в Visual Studio / VS Code с расширением REST Client)
+### Перед запуском: dotnet run --project StationeryAccounting
+
+@host = http://localhost:5080
+
+### 1. Справочник с остатками
+GET {{host}}/api/products
+
+### 2. Поиск по наименованию
+GET {{host}}/api/products?search=ручка
+
+### 3. Только товары ниже минимума
+GET {{host}}/api/products?belowMinOnly=true
+
+### 4. Товар с остатком (KT-001)
+GET {{host}}/api/products/1
+
+### 5. Неизвестный товар → 404
+GET {{host}}/api/products/999
+
+### 6. Поступление → 200, остаток увеличился
+POST {{host}}/api/operations/receipt
+Content-Type: application/json
+
+{ "productId": 2, "quantity": 10, "date": "2026-11-10", "supplier": "ООО «КанцОптТорг»", "documentNumber": "ТН-1050" }
+
+### 7. Поступление без поставщика и документа → 400
+POST {{host}}/api/operations/receipt
+Content-Type: application/json
+
+{ "productId": 2, "quantity": 10, "date": "2026-11-10" }
+
+### 8. Выдача в пределах остатка → 200 (с предупреждением, если остаток стал ≤ минимума)
+POST {{host}}/api/operations/issue
+Content-Type: application/json
+
+{ "productId": 3, "quantity": 5, "date": "2026-11-10", "employeeId": 1 }
+
+### 9. Выдача больше остатка → 400 «Недостаточно товара»
+POST {{host}}/api/operations/issue
+Content-Type: application/json
+
+{ "productId": 1, "quantity": 1000, "date": "2026-11-10", "employeeId": 1 }
+
+### 10. Выдача без сотрудника → 400
+POST {{host}}/api/operations/issue
+Content-Type: application/json
+
+{ "productId": 3, "quantity": 1, "date": "2026-11-10" }
+
+### 11. Выдача архивного товара (KT-011) → 400
+POST {{host}}/api/operations/issue
+Content-Type: application/json
+
+{ "productId": 11, "quantity": 1, "date": "2026-11-10", "employeeId": 1 }
+
+### 12. Количество 0 → 400
+POST {{host}}/api/operations/issue
+Content-Type: application/json
+
+{ "productId": 3, "quantity": 0, "date": "2026-11-10", "employeeId": 1 }
+
+### 13. История выдач по товару KT-001
+GET {{host}}/api/operations?productId=1&type=Issue
