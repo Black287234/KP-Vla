@@ -148,15 +148,18 @@ def margins(section):
 
 
 def auto_widths(rows, total=17.0):
-    """Ширины столбцов пропорционально объёму текста (корень из средней длины), не уже 1,2 см."""
+    """Ширины столбцов: не уже самого длинного слова, остальное — пропорционально объёму текста."""
     n = len(rows[0])
-    weights = []
+    mins, weights = [], []
     for j in range(n):
-        lens = [len(r[j]) if j < len(r) else 0 for r in rows]
-        avg = sum(lens) / len(lens)
-        weights.append(max(avg, max(len(w) for w in (rows[0][j].split() or [""])) * 0.9) ** 0.75 + 1)
+        cells = [r[j] if j < len(r) else "" for r in rows]
+        longest = max((len(w) for c in cells for w in c.replace("\\n", " ").split()), default=1)
+        mins.append(min(5.0, longest * 0.24 + 0.6))
+        avg = sum(len(c) for c in cells) / len(cells)
+        weights.append(avg ** 0.8 + 1)
+    rest = max(0.0, total - sum(mins))
     s = sum(weights)
-    widths = [max(1.2, total * w / s) for w in weights]
+    widths = [mins[j] + rest * weights[j] / s for j in range(n)]
     k = total / sum(widths)
     return [w * k for w in widths]
 

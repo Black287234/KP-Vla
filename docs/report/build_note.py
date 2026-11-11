@@ -39,3 +39,21 @@ tmp.unlink()
 print("Таблиц:", builder.table_no, "Рисунков:", builder.figure_no)
 for level, title in builder.toc_entries:
     print(("   " if level == 2 else "") + title, pages.get(title))
+
+# Отдельный документ «Таблица проверок» (этап 4) — без титула и содержания
+from gost_docx import NoteBuilder  # noqa: E402
+text2 = (HERE / "checks_table.txt").read_text(encoding="utf-8")
+for key, value in results.items():
+    text2 = text2.replace("{" + key + "}", str(value).replace("|", "/").replace("\n", " "))
+from docx import Document  # noqa: E402
+b2 = NoteBuilder(HERE / "title_template.docx", INFO, HERE)
+body = b2.doc.element.body
+for el in list(body):
+    if el.tag.endswith("}p") or el.tag.endswith("}tbl"):
+        body.remove(el)
+from gost_docx import margins  # noqa: E402
+margins(b2.doc.sections[0])
+b2.first_heading = True
+b2.load(text2)
+b2.doc.save(ROOT / "docs" / "Таблица_проверок.docx")
+print("Таблица проверок сохранена")
