@@ -37,8 +37,8 @@ dotnet run --project StationeryAccounting
 - Данные сохраняются между запусками. **Сброс к учебным данным:** остановить приложение, удалить `stationery.db`, запустить снова.
 - Альтернатива: `dotnet tool install --global dotnet-ef`, затем `dotnet ef database update --project StationeryAccounting`.
 
-Пакеты NuGet: `Microsoft.EntityFrameworkCore.Sqlite 10.0.0`, `Microsoft.EntityFrameworkCore.Design 10.0.0`;
-тесты — `xunit 2.9.3`, `xunit.runner.visualstudio 3.1.4`, `Microsoft.NET.Test.Sdk 17.14.1`.
+Пакеты NuGet: `Microsoft.EntityFrameworkCore.Sqlite 10.0.15`, `Microsoft.EntityFrameworkCore.Design 10.0.15`;
+тесты — `xunit 2.9.3`, `xunit.runner.visualstudio 3.1.4`, `Microsoft.NET.Test.Sdk 17.14.2`.
 
 ## Тесты
 
