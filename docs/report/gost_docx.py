@@ -5,7 +5,6 @@
 Текст записки пишется в простом текстовом формате (см. note.txt), а этот модуль
 превращает его в оформленный документ Word:
   - титульный лист по шаблону колледжа (title_template.docx);
-  - пустой лист для рецензии (без номера);
   - содержание с номерами страниц (номера берутся из пробной сборки в PDF);
   - поля 30/10/20/20 мм, Times New Roman 14, интервал 1,5, отступ 1,25 см;
   - номера страниц внизу по центру, «Содержание» — страница 2;
@@ -510,7 +509,6 @@ def build(template, info, note_path, out_path):
 
     def make(pages):
         b = NoteBuilder(template, info, note_path.parent)
-        b.review_page()
         b.toc()
         b.load(text)
         b.toc_pages = pages
@@ -540,8 +538,8 @@ def find_pages(docx_path, titles, search_keys=None, keep_pdf=False):
         out = subprocess.run(["pdftotext", "-layout", str(pdf), "-"], capture_output=True, text=True).stdout
     pages_text = out.split("\f")
     result = {}
-    # Физическая страница N в PDF: 1 — титул, 2 — рецензия, 3 — содержание (номер 2) → номер = N − 1
-    start_search = 3
+    # Физическая страница N в PDF: 1 — титул, 2 — содержание (номер 2) → номер = N
+    start_search = 2
     # пропускаем страницы самого содержания (в них много точек-заполнителей)
     while start_search < len(pages_text) and pages_text[start_search].count("....") >= 3:
         start_search += 1
@@ -550,7 +548,7 @@ def find_pages(docx_path, titles, search_keys=None, keep_pdf=False):
         for idx in range(start_search, len(pages_text)):
             page = re.sub(r"\s+", " ", pages_text[idx])
             if key in page:
-                result[title] = idx  # idx (0-based) + 1 − 1
+                result[title] = idx + 1  # idx считается с 0
                 start_search = idx
                 break
     return result
