@@ -476,7 +476,7 @@ class NoteBuilder:
             elif line.startswith(":figure "):
                 path, title = [s.strip() for s in line[8:].split("|", 1)]
                 # снимки экрана чуть уже схем, чтобы записка не разрасталась
-                self.figure(path, title, 13.5 if "screenshots" in path else 15, 11 if "screenshots" in path else 12.5)
+                self.figure(path, title, 13.5 if "screenshots" in path else 15, 7.5 if "screenshots" in path else 9.5)
             elif line.startswith(":formula "):
                 f, n = [s.strip() for s in line[9:].rsplit("|", 1)]
                 self.formula(f, n)
@@ -492,7 +492,9 @@ class NoteBuilder:
                 self.code(block)
             elif line.startswith(":include "):
                 path = self.base / line[9:].strip()
-                lines_ = path.read_text(encoding="utf-8-sig").splitlines()
+                # XML-комментарии «///» в печатном листинге не нужны — пояснения есть в тексте
+                lines_ = [ln for ln in path.read_text(encoding="utf-8-sig").splitlines()
+                          if not ln.strip().startswith("///")]
                 # в приложениях листинги длинные — разрешаем разрыв между страницами
                 for ln in lines_:
                     p = self.doc.add_paragraph()
@@ -519,11 +521,44 @@ class NoteBuilder:
         set_font(p2.add_run("                                                                  (подпись)                   (ФИО)"), 10)
 
 
+def renumber(text):
+    """
+    Сквозная нумерация ссылок «рисунок N», «таблица N», «листинг N» в тексте:
+    ссылка получает номер ближайшего следующего за ней рисунка (таблицы, листинга).
+    Так после удаления или добавления рисунков номера в тексте остаются верными.
+    """
+    lines = text.splitlines()
+    body_end = next((i for i, l in enumerate(lines) if l.startswith("@appendix")), len(lines))
+    kinds = {"fig": (":figure ", r"(рисун(?:ок|ке|ка|ку|ком))\s+(\d+)"),
+             "tab": (":table ", r"((?<![а-яА-Я])таблиц(?:а|е|ы|у|ей))\s+(\d+)"),
+             "lst": (":code ", r"(листинг(?:е|а|у|ом)?)\s+(\d+)")}
+    for kind, (marker, rx) in kinds.items():
+        positions = [i for i, l in enumerate(lines[:body_end]) if l.startswith(marker)]
+        if not positions:
+            continue
+
+        def number_for(line_no):
+            for k, pos in enumerate(positions, 1):
+                if pos >= line_no:
+                    return k
+            return len(positions)
+
+        for i in range(body_end):
+            l = lines[i]
+            if l.startswith((":figure", ":table", ":code", "#")):
+                continue
+            base = number_for(i)
+            counter = iter(range(len(positions) + 1))
+            # несколько ссылок в одной строке — на идущие подряд рисунки
+            lines[i] = re.sub(rx, lambda m: f"{m.group(1)} {min(base + next(counter), len(positions))}", l)
+    return "\n".join(lines)
+
+
 def build(template, info, note_path, out_path):
     """Двухпроходная сборка: сначала узнаём страницы заголовков по PDF, затем пишем содержание."""
     note_path = Path(note_path)
     out_path = Path(out_path)
-    text = note_path.read_text(encoding="utf-8")
+    text = renumber(note_path.read_text(encoding="utf-8"))
 
     def make(pages):
         b = NoteBuilder(template, info, note_path.parent)
