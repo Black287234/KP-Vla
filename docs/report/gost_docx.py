@@ -423,11 +423,21 @@ class NoteBuilder:
         set_font(p.add_run("\t" + text + "\t" + number), 14, italic=False)
 
     def code(self, lines):
-        for line in lines:
+        short = len(lines) <= 30
+        for k, line in enumerate(lines):
             p = self.doc.add_paragraph()
-            fmt(p, align=WD_ALIGN_PARAGRAPH.LEFT, indent=0, spacing=1, hyphen=False)
+            fmt(p, align=WD_ALIGN_PARAGRAPH.LEFT, indent=0, spacing=1, hyphen=False,
+                keep_next=short and k < len(lines) - 1)
+            p.paragraph_format.left_indent = Cm(0.5)
             run = p.add_run(line.replace("\t", "    ") if line else " ")
             set_font(run, 10, font=MONO)
+
+    def listing_caption(self, title):
+        """Подпись листинга над кодом: «Листинг N – Название»."""
+        self.listing_no = getattr(self, "listing_no", 0) + 1
+        cap = self.doc.add_paragraph()
+        fmt(cap, align=WD_ALIGN_PARAGRAPH.LEFT, indent=0, keep_next=True, before=6, after=3)
+        set_font(cap.add_run(f"Листинг {self.listing_no} – {title}"), 14)
 
     def page_break(self):
         p = self.doc.add_paragraph()
@@ -471,6 +481,9 @@ class NoteBuilder:
                 f, n = [s.strip() for s in line[9:].rsplit("|", 1)]
                 self.formula(f, n)
             elif line.startswith(":code"):
+                title = line[5:].strip()
+                if title:
+                    self.listing_caption(title)
                 block = []
                 i += 1
                 while i < len(lines) and not lines[i].startswith(":endcode"):
@@ -479,7 +492,12 @@ class NoteBuilder:
                 self.code(block)
             elif line.startswith(":include "):
                 path = self.base / line[9:].strip()
-                self.code(path.read_text(encoding="utf-8-sig").splitlines())
+                lines_ = path.read_text(encoding="utf-8-sig").splitlines()
+                # в приложениях листинги длинные — разрешаем разрыв между страницами
+                for ln in lines_:
+                    p = self.doc.add_paragraph()
+                    fmt(p, align=WD_ALIGN_PARAGRAPH.LEFT, indent=0, spacing=1, hyphen=False)
+                    set_font(p.add_run(ln.replace("\t", "    ") if ln else " "), 10, font=MONO)
             elif line.startswith(":pagebreak"):
                 self.page_break()
             elif line.startswith(":raw-center "):
