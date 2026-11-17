@@ -1,0 +1,61 @@
+# Сквозные сценарии в браузере (Playwright для Node.js), снимки экрана и фактические результаты.
+# Запуск вручную; при save=true результаты сохраняются в docs/checks отдельным коммитом.
+name: e2e
+
+on:
+  workflow_dispatch:
+    inputs:
+      save:
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      LANG: ru_RU.UTF-8
+      TZ: Asia/Yekaterinburg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm init -y > /dev/null && npm i playwright@1.48.2 && npx playwright install --with-deps chromium
+      - run: dotnet build Stationery.sln -c Release
+      - name: Тесты
+        run: dotnet test Stationery.sln --no-build -c Release --logger "console;verbosity=normal" 2>&1 | tee tests.txt
+      - name: Сценарии
+        run: |
+          rm -rf docs/checks/screens docs/checks/results.json
+          cd Stationery.Api && rm -f stationery.db
+          nohup dotnet run --no-build -c Release --urls http://localhost:5091 > /tmp/a1.log 2>&1 &
+          cd ..
+          for i in $(seq 1 60); do curl -s http://localhost:5091 > /dev/null && break; sleep 1; done
+          node tools/e2e.mjs main
+          pkill -f Stationery.Api || true; sleep 3
+          cd Stationery.Api
+          nohup dotnet run --no-build -c Release --urls http://localhost:5091 > /tmp/a2.log 2>&1 &
+          cd ..
+          for i in $(seq 1 60); do curl -s http://localhost:5091 > /dev/null && break; sleep 1; done
+          node tools/e2e.mjs restart
+          pkill -f Stationery.Api || true
+          cp tests.txt docs/checks/tests.txt
+          grep -iE "fail|exception" /tmp/a1.log | head -20 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: checks
+          path: docs/checks
+      - name: Сохранение
+        if: ${{ inputs.save }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add docs/checks
+          git commit -m "Результаты сквозных сценариев и снимки экрана [skip ci]" || echo "нет изменений"
+          git push
