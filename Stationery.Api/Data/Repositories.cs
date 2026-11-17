@@ -65,6 +65,7 @@ public interface IMovementRepository
     /// <summary>Остатки всех товаров (товар без операций в словаре отсутствует — его остаток равен нулю).</summary>
     IReadOnlyDictionary<int, Balance> Balances();
     int BalanceOf(int productId);
+    bool HasMovements(int productId);
     IReadOnlyList<Movement> List(MovementFilter filter);
     void Add(Movement movement);
     void Save();
@@ -86,6 +87,8 @@ public class MovementRepository(StockContext db) : IMovementRepository
     public int BalanceOf(int productId) =>
         db.Movements.Where(m => m.ProductId == productId)
           .Sum(m => m.Kind == MovementKind.Receipt ? m.Quantity : -m.Quantity);
+
+    public bool HasMovements(int productId) => db.Movements.Any(m => m.ProductId == productId);
 
     public IReadOnlyList<Movement> List(MovementFilter f)
     {

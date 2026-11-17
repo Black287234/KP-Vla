@@ -74,10 +74,15 @@ public class StockService(IProductRepository products, IDepartmentRepository dep
         var quantity = form.Quantity!.Value;
 
         using var tx = movements.BeginTransaction(out var commit);
-        var balance = movements.BalanceOf(product.Id);
-        if (quantity > balance)
-            throw AppException.Conflict(
-                $"Недостаточно товара «{product.Name}»: на складе {balance} {product.Unit}, запрошено {quantity} {product.Unit}");
+        var date = form.Date!.Value;
+        var history = movements.List(new MovementFilter(ProductId: product.Id));
+        var balance = history.Sum(Signed);
+        var available = AvailableForIssue(history, date);
+        if (quantity > available)
+            throw AppException.Conflict(available == balance
+                ? $"Недостаточно товара «{product.Name}»: на складе {balance} {product.Unit}, запрошено {quantity} {product.Unit}"
+                : $"Недостаточно товара «{product.Name}» на дату {date:dd.MM.yyyy}: можно выдать не более {available} {product.Unit}, " +
+                  $"иначе остаток в истории станет отрицательным (сейчас на складе {balance} {product.Unit})");
 
         var m = new Movement
         {
@@ -146,6 +151,28 @@ public class StockService(IProductRepository products, IDepartmentRepository dep
     }
 
     public int BalanceOf(int productId) => movements.BalanceOf(productId);
+
+    private static int Signed(Movement m) => m.Kind == MovementKind.Receipt ? m.Quantity : -m.Quantity;
+
+    /// <summary>
+    /// Сколько товара можно выдать датой <paramref name="date"/>, чтобы остаток не стал отрицательным
+    /// ни на эту дату, ни после неё. Новая операция встаёт в историю после всех операций той же даты,
+    /// поэтому учитываются остаток на конец этой даты и остатки после каждой более поздней операции.
+    /// </summary>
+    public static int AvailableForIssue(IEnumerable<Movement> history, DateOnly date)
+    {
+        var ordered = history.OrderBy(m => m.Date).ThenBy(m => m.Id).ToList();
+        var running = 0;
+        var minimum = int.MaxValue;
+        foreach (var m in ordered)
+        {
+            if (m.Date > date && minimum == int.MaxValue) minimum = running;   // остаток на конец даты выдачи
+            running += Signed(m);
+            if (m.Date > date) minimum = Math.Min(minimum, running);
+        }
+        if (minimum == int.MaxValue) minimum = running;   // более поздних операций нет
+        return Math.Max(0, minimum);
+    }
 
     private Product ActiveProduct(int id)
     {

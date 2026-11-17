@@ -15,6 +15,8 @@ builder.Services.AddScoped<IMovementRepository, MovementRepository>();
 builder.Services.AddScoped<CatalogService>();
 builder.Services.AddScoped<StockService>();
 builder.Services.AddSingleton(TimeProvider.System);
+// Ошибки привязки параметров передаются исключением и оформляются обработчиком UseAppErrors
+builder.Services.Configure<RouteHandlerOptions>(o => o.ThrowOnBadRequest = true);
 // Перечисления передаются в JSON названиями (Paper, Receipt), а не числами
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 

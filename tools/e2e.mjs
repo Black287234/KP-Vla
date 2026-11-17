@@ -113,7 +113,7 @@ async function main(page) {
   await page.fill("[name=documentNumber]", "ТН-2050");
   await submit(page);
   msg = await message(page);
-  record("Т06", "Поступление 30 шт. товара КТ-0020", "Поступление оформлено, остаток 30 шт.", msg, msg.includes("Остаток: 30"), await snap(page, "06_receipt"));
+  record("Т06", "Поступление 30 шт. товара КТ-0020", "Поступление оформлено, остаток 30 шт.", msg, msg.includes("Поступление оформлено") && msg.includes("остаток на складе: 30 шт."), await snap(page, "06_receipt"));
 
   await open(page, `/issue?product=${pid}`);
   const shown = (await page.locator("#bal").innerText()).trim();
@@ -122,7 +122,7 @@ async function main(page) {
   await page.fill("[name=recipient]", "Ковалёва И. П.");
   await submit(page);
   msg = await message(page);
-  record("Т07", "Выдача 12 шт. в учебную часть", "Выдача оформлена, остаток 18 шт.", `${shown}; ${msg}`, msg.includes("Остаток: 18"), await snap(page, "07_issue"));
+  record("Т07", "Выдача 12 шт. в учебную часть", "Сообщение «Выдача оформлена», остаток 18 шт.", `${shown}; ${msg}`, msg.includes("Выдача оформлена") && msg.includes("остаток на складе: 18 шт.") && !msg.includes(".."), await snap(page, "07_issue"));
 
   await open(page, `/issue?product=${pid}`);
   await page.fill("[name=quantity]", "50");

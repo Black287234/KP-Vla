@@ -21,7 +21,26 @@ public static class ErrorHandling
                 context.Response.StatusCode = ex.Status;
                 await context.Response.WriteAsJsonAsync(new { message = ex.Message });
             }
+            catch (BadHttpRequestException ex)
+            {
+                // Тело запроса не разобрано или параметр адреса указан в неверном формате
+                context.Response.Clear();
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsJsonAsync(new { message = Describe(ex) });
+            }
         });
+    }
+
+    private static string Describe(BadHttpRequestException ex)
+    {
+        var text = ex.ToString();
+        if (text.Contains("JsonException") || text.Contains("as JSON"))
+            return "Данные запроса не удалось прочитать: проверьте формат JSON и значений (дата — гггг-мм-дд, количество — целое число)";
+        if (text.Contains("Failed to bind parameter"))
+            return "Параметр запроса указан в неверном формате (дата — гггг-мм-дд, код — целое число)";
+        if (text.Contains("Required parameter"))
+            return "Не передан обязательный параметр запроса";
+        return "Неверный запрос";
     }
 
     /// <summary>Фильтр конечной точки: проверка атрибутов DataAnnotations у тела запроса.</summary>

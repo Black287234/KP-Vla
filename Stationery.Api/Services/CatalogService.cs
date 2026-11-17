@@ -60,6 +60,12 @@ public class CatalogService(IProductRepository products, IDepartmentRepository d
     public Product UpdateProduct(int id, ProductForm form)
     {
         var product = Product(id);
+        // Количество в операциях указано в прежней единице: её замена исказила бы историю и остаток
+        var unit = form.Unit!.Trim();
+        if (!string.Equals(unit, product.Unit, StringComparison.OrdinalIgnoreCase) && movements.HasMovements(id))
+            throw AppException.Conflict(
+                $"Нельзя изменить единицу измерения: по товару уже есть операции, количество в них указано в единицах «{product.Unit}». " +
+                "Для новой фасовки заведите отдельный товар");
         Apply(product, form);
         products.Save();
         return product;

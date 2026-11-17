@@ -326,7 +326,7 @@ function bindMovementForm(kind) {
     ev.preventDefault();
     try {
       const m = await api(`/api/movements/${kind}`, "POST", formData(form));
-      flash(`${KIND[m.kind]} оформлено: ${m.article} ${m.product}, ${m.quantity} ${m.unit}. Остаток: ${m.balanceAfter} ${m.unit}`);
+      flash(`${m.kind === "Receipt" ? "Поступление оформлено" : "Выдача оформлена"}: ${m.article} ${m.product}, ${m.quantity} ${m.unit}; остаток на складе: ${m.balanceAfter} ${m.unit}`);
       render();
     } catch (e) { showErrors(form, e); }
   });
