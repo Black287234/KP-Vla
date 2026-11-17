@@ -85,8 +85,9 @@ public class StockServiceTests
 
     [DataTestMethod, Description("Количество, доступное к выдаче на дату")]
     [DataRow(12, 0, DisplayName = "До первого поступления — 0")]
-    [DataRow(10, 20, DisplayName = "В день поступления — весь приход")]
-    [DataRow(6, 5, DisplayName = "Между выдачами — ограничено поздней выдачей")]
+    [DataRow(10, 5, DisplayName = "В день поступления — ограничено последующей выдачей")]
+    [DataRow(3, 5, DisplayName = "После выдачи — остаток после неё")]
+    [DataRow(1, 25, DisplayName = "В день второго поступления — весь остаток")]
     [DataRow(0, 25, DisplayName = "Сегодня — текущий остаток")]
     public void AvailableForIssue_ByDate(int daysAgo, int expected)
     {
