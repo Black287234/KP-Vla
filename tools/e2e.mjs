@@ -29,9 +29,11 @@ async function snap(page, name) {
   return name + ".png";
 }
 
+let visit = 0;
 async function open(page, hash) {
-  await page.goto(BASE + "/#" + hash);
-  await page.waitForLoadState("networkidle");
+  // Полная загрузка страницы при каждом переходе и ожидание окончания отрисовки
+  await page.goto(`${BASE}/?v=${++visit}#${hash}`);
+  await page.waitForSelector("body[data-ready]");
 }
 
 async function message(page) {
@@ -39,11 +41,17 @@ async function message(page) {
   return t.map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean).join(" | ");
 }
 
-async function submit(page) {
-  await page.click("form#f button.btn");
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(300);
+/** Нажатие кнопки и ожидание результата: новой отрисовки страницы или сообщения об ошибке у формы. */
+async function press(page, selector, msgBox = ".form-msg") {
+  await page.evaluate((box) => {
+    delete document.body.dataset.ready;
+    document.querySelectorAll(box).forEach((x) => { x.innerHTML = ""; });
+  }, msgBox);
+  await page.click(selector);
+  await page.waitForSelector(`body[data-ready], ${msgBox} .msg`);
 }
+
+const submit = (page) => press(page, "form#f button.btn");
 
 async function api(method, url, body, raw) {
   const r = await fetch(BASE + url, { method, headers: { "Content-Type": "application/json" },
@@ -143,8 +151,9 @@ async function main(page) {
     lowText, lowText.includes("8") && lowText.includes("2 шт."), await snap(page, "10_low_stock"));
 
   if (await lowRow.count()) {
+    await page.evaluate(() => { delete document.body.dataset.ready; });
     await lowRow.locator("a.btn").click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForSelector("body[data-ready]");
     const qty = await page.inputValue("[name=quantity]");
     const prod = await page.locator("[name=productId] option:checked").innerText();
     record("Т11", "Переход «Оформить поступление» из списка к пополнению", "Форма поступления с выбранным товаром и количеством 2",
@@ -152,8 +161,7 @@ async function main(page) {
   }
 
   await open(page, `/products/${pid}`);
-  await page.click("#arch");
-  await page.waitForTimeout(400);
+  await press(page, "#arch", "#m");
   msg = await message(page);
   record("Т12", "Вывод из ассортимента товара с остатком 8 шт.", "Отказ: товар есть на складе", msg, msg.includes("есть на складе"));
 

@@ -389,6 +389,12 @@ const dynamic = [
 ];
 
 async function render() {
+  // Признак завершения отрисовки (используется сценариями автоматической проверки)
+  delete document.body.dataset.ready;
+  try { await draw(); } finally { document.body.dataset.ready = "1"; }
+}
+
+async function draw() {
   const [path, qs] = (location.hash.replace(/^#/, "") || "/").split("?");
   const params = new URLSearchParams(qs || "");
   document.querySelectorAll("#nav a").forEach((a) => {
