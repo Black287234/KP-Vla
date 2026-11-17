@@ -1,0 +1,39 @@
+# Запросы к API учёта канцелярских товаров (Visual Studio, Rider, VS Code REST Client)
+@host = http://localhost:5091
+
+### Справочник товаров (поиск и отбор по группе)
+GET {{host}}/api/products?search=ручка&category=Writing
+
+### Новый товар
+POST {{host}}/api/products
+Content-Type: application/json
+
+{ "article": "КТ-0030", "name": "Ластик белый", "category": "Writing", "unit": "шт.", "minQuantity": 10 }
+
+### Остатки и товары к пополнению
+GET {{host}}/api/stock
+###
+GET {{host}}/api/stock/low
+
+### Поступление
+POST {{host}}/api/movements/receipt
+Content-Type: application/json
+
+{ "productId": 1, "quantity": 40, "date": "2026-11-17", "supplier": "ООО «Офис-Комплект»", "documentNumber": "ТН-2100" }
+
+### Выдача подразделению
+POST {{host}}/api/movements/issue
+Content-Type: application/json
+
+{ "productId": 1, "quantity": 5, "date": "2026-11-17", "departmentId": 1, "recipient": "Ковалёва И. П." }
+
+### История движения за период
+GET {{host}}/api/movements?from=2026-11-01&to=2026-11-30&kind=Issue
+
+### История товара с остатком после каждой операции
+GET {{host}}/api/products/1/movements
+
+### Сводка и расход по подразделениям
+GET {{host}}/api/reports/summary
+###
+GET {{host}}/api/reports/consumption?from=2026-11-01&to=2026-11-30
