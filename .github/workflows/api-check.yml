@@ -1,0 +1,35 @@
+# Запуск приложения, проверка API и развёртывание из архива в чистый каталог
+name: api-check
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build Stationery.sln -c Release
+      - name: Проверка API
+        run: |
+          cd Stationery.Api && rm -f stationery.db
+          nohup dotnet run --no-build -c Release --urls http://localhost:5091 > /tmp/app.log 2>&1 &
+          for i in $(seq 1 60); do curl -s http://localhost:5091 > /dev/null && break; sleep 1; done
+          cd .. && bash tools/check_api.sh http://localhost:5091
+      - name: Журнал приложения
+        if: always()
+        run: grep -iE "fail|exception|error" /tmp/app.log | head -30 || true
+      - name: Развёртывание из архива
+        run: |
+          pkill -f Stationery.Api || true
+          git archive -o /tmp/p.zip HEAD && mkdir /tmp/d && cd /tmp/d && unzip -q /tmp/p.zip
+          dotnet build Stationery.sln -c Release 2>&1 | tail -2
+          cd Stationery.Api
+          nohup dotnet run --no-build -c Release --urls http://localhost:5092 > /tmp/d.log 2>&1 &
+          for i in $(seq 1 60); do curl -s http://localhost:5092 > /dev/null && break; sleep 1; done
+          echo "Товаров в справочнике: $(curl -s http://localhost:5092/api/products | grep -o '"article"' | wc -l)"
+          ls -la stationery.db

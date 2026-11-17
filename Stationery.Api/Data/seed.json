@@ -1,0 +1,31 @@
+{
+  "departments": [
+    { "name": "Учебная часть", "head": "Ковалёва Ирина Петровна" },
+    { "name": "Бухгалтерия", "head": "Мартынова Светлана Олеговна" },
+    { "name": "Приёмная комиссия", "head": "Широкова Анна Викторовна" },
+    { "name": "Отделение информационных технологий", "head": "Крючков Виталий Владимирович" },
+    { "name": "Отделение экономики и права", "head": "Абдуллаева Зарина Рустамовна" },
+    { "name": "Библиотека", "head": "Тарасова Нина Михайловна" }
+  ],
+  "products": [
+    { "article": "КТ-0001", "name": "Бумага офисная А4, 80 г/м², 500 листов", "category": "Paper", "unit": "пачка", "min": 20 },
+    { "article": "КТ-0002", "name": "Бумага офисная А3, 80 г/м², 500 листов", "category": "Paper", "unit": "пачка", "min": 3 },
+    { "article": "КТ-0003", "name": "Тетрадь 48 листов, клетка", "category": "Paper", "unit": "шт.", "min": 40 },
+    { "article": "КТ-0004", "name": "Блок для записей 9×9 см", "category": "Paper", "unit": "шт.", "min": 10 },
+    { "article": "КТ-0005", "name": "Ручка шариковая синяя", "category": "Writing", "unit": "шт.", "min": 50 },
+    { "article": "КТ-0006", "name": "Ручка гелевая чёрная", "category": "Writing", "unit": "шт.", "min": 20 },
+    { "article": "КТ-0007", "name": "Карандаш чернографитный HB", "category": "Writing", "unit": "шт.", "min": 30 },
+    { "article": "КТ-0008", "name": "Маркер для доски, набор 4 цвета", "category": "Writing", "unit": "набор", "min": 8 },
+    { "article": "КТ-0009", "name": "Текстовыделитель жёлтый", "category": "Writing", "unit": "шт.", "min": 10 },
+    { "article": "КТ-0010", "name": "Папка-регистратор 75 мм", "category": "Filing", "unit": "шт.", "min": 10 },
+    { "article": "КТ-0011", "name": "Файл-вкладыш А4, 100 шт.", "category": "Filing", "unit": "упаковка", "min": 10 },
+    { "article": "КТ-0012", "name": "Папка-скоросшиватель картонная", "category": "Filing", "unit": "шт.", "min": 50 },
+    { "article": "КТ-0013", "name": "Скобы для степлера № 24/6", "category": "DeskSupplies", "unit": "коробка", "min": 15 },
+    { "article": "КТ-0014", "name": "Степлер № 24/6 на 30 листов", "category": "DeskSupplies", "unit": "шт.", "min": 3 },
+    { "article": "КТ-0015", "name": "Клей-карандаш 21 г", "category": "DeskSupplies", "unit": "шт.", "min": 15 },
+    { "article": "КТ-0016", "name": "Скрепки 28 мм, 100 шт.", "category": "DeskSupplies", "unit": "коробка", "min": 10 },
+    { "article": "КТ-0017", "name": "Картридж для лазерного принтера HP 85A", "category": "PrinterSupplies", "unit": "шт.", "min": 4 },
+    { "article": "КТ-0018", "name": "Тонер для копировального аппарата", "category": "PrinterSupplies", "unit": "шт.", "min": 2 },
+    { "article": "КТ-0019", "name": "Дискета 3,5\" 1,44 МБ", "category": "PrinterSupplies", "unit": "шт.", "min": 0, "archived": true }
+  ]
+}

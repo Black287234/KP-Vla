@@ -1,31 +1,35 @@
-using Stationery.Api.Domain;
+using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
+using Stationery.Api.Data;
+using Stationery.Api.Endpoints;
+using Stationery.Api.Infrastructure;
+using Stationery.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<StockContext>(o =>
+    o.UseSqlite(builder.Configuration.GetConnectionString("Stock") ?? "Data Source=stationery.db"));
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+builder.Services.AddScoped<CatalogService>();
+// Перечисления передаются в JSON названиями (Paper, Receipt), а не числами
+builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
 var app = builder.Build();
 
-// Этап 1: справочник хранится в памяти процесса
-var products = new List<Product>
-{
-    new() { Id = 1, Article = "КТ-0001", Name = "Бумага офисная А4, 500 листов", Category = ProductCategory.Paper, Unit = "пачка", MinQuantity = 20 },
-    new() { Id = 2, Article = "КТ-0002", Name = "Ручка шариковая синяя", Category = ProductCategory.Writing, Unit = "шт.", MinQuantity = 50 },
-    new() { Id = 3, Article = "КТ-0003", Name = "Карандаш чернографитный HB", Category = ProductCategory.Writing, Unit = "шт.", MinQuantity = 30 },
-    new() { Id = 4, Article = "КТ-0004", Name = "Папка-регистратор 75 мм", Category = ProductCategory.Filing, Unit = "шт.", MinQuantity = 10 },
-    new() { Id = 5, Article = "КТ-0005", Name = "Скобы для степлера № 24/6", Category = ProductCategory.DeskSupplies, Unit = "упаковка", MinQuantity = 15 },
-    new() { Id = 6, Article = "КТ-0006", Name = "Картридж для лазерного принтера", Category = ProductCategory.PrinterSupplies, Unit = "шт.", MinQuantity = 3 }
-};
+using (var scope = app.Services.CreateScope())
+    SeedData.Initialize(scope.ServiceProvider.GetRequiredService<StockContext>(), app.Environment.ContentRootPath);
 
-// Одностраничный интерфейс: index.html и сценарии из wwwroot
+app.UseAppErrors();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 var api = app.MapGroup("/api");
-api.MapGet("/products", () => products.Select(p => new
-{
-    p.Id, p.Article, p.Name, Category = ProductCategoryNames.All[p.Category], p.Unit, p.MinQuantity
-}));
-api.MapGet("/products/{id:int}", (int id) =>
-    products.FirstOrDefault(p => p.Id == id) is { } p
-        ? Results.Ok(p)
-        : Results.NotFound(new { message = $"Товар с кодом {id} не найден" }));
+api.MapCatalog();
+// Неизвестный адрес API — ответ 404 в формате JSON, а не страница
+api.MapFallback(() => Results.NotFound(new { message = "Адрес API не найден" }));
 
 app.Run();
+
+/// <summary>Объявление нужно тестам WebApplicationFactory.</summary>
+public partial class Program;
