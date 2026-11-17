@@ -27,5 +27,22 @@ check POST /api/products/1/archive 409
 check POST /api/products/1/restore 200
 check POST /api/departments 201 '{"name":"Методический кабинет","head":"Белова Ольга Ивановна"}'
 check POST /api/departments 409 '{"name":"методический  кабинет","head":"Белова Ольга Ивановна"}'
+T=$(date +%F); Y=$(date -d '-1 day' +%F); F=$(date -d '+1 day' +%F); OLD=$(date -d '-40 day' +%F)
+check GET /api/stock 200
+check GET /api/stock/low 200
+check GET /api/reports/summary 200
+check GET "/api/reports/consumption?from=$OLD&to=$T" 200
+check GET "/api/reports/consumption?from=$T&to=$OLD" 400
+check GET /api/products/2/movements 200
+check GET "/api/movements?kind=Issue&from=$OLD" 200
+check GET "/api/movements?from=$T&to=$OLD" 400
+check POST /api/movements/receipt 201 "{\"productId\":2,\"quantity\":10,\"date\":\"$T\",\"supplier\":\"ООО «Офис-Комплект»\",\"documentNumber\":\"ТН-2001\"}"
+check POST /api/movements/receipt 400 "{\"productId\":2,\"quantity\":10,\"date\":\"$F\",\"supplier\":\"ООО «Офис-Комплект»\"}"
+check POST /api/movements/receipt 400 "{\"productId\":2,\"quantity\":0,\"date\":\"$T\",\"supplier\":\"\"}"
+check POST /api/movements/issue 201 "{\"productId\":2,\"quantity\":5,\"date\":\"$T\",\"departmentId\":1,\"recipient\":\"Ковалёва И. П.\"}"
+check POST /api/movements/issue 409 "{\"productId\":2,\"quantity\":100000,\"date\":\"$T\",\"departmentId\":1,\"recipient\":\"Ковалёва И. П.\"}"
+check POST /api/movements/issue 404 "{\"productId\":2,\"quantity\":1,\"date\":\"$T\",\"departmentId\":999,\"recipient\":\"Ковалёва И. П.\"}"
+check POST /api/movements/issue 409 "{\"productId\":19,\"quantity\":1,\"date\":\"$T\",\"departmentId\":1,\"recipient\":\"Ковалёва И. П.\"}"
+check POST /api/products/2/archive 409
 check GET /api/unknown 404
 exit $fail

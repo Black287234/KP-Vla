@@ -31,7 +31,7 @@ public record DepartmentForm(
     string? Head);
 
 /// <summary>Справочники товаров и подразделений.</summary>
-public class CatalogService(IProductRepository products, IDepartmentRepository departments)
+public class CatalogService(IProductRepository products, IDepartmentRepository departments, IMovementRepository movements)
 {
     public IReadOnlyList<Product> Products(string? search, ProductCategory? category, bool includeArchived)
     {
@@ -70,6 +70,10 @@ public class CatalogService(IProductRepository products, IDepartmentRepository d
         var product = Product(id);
         if (product.IsArchived == archived)
             throw AppException.Conflict(archived ? "Товар уже выведен из ассортимента" : "Товар уже находится в ассортименте");
+        // Выводить из ассортимента можно только товар, которого нет на складе
+        var balance = movements.BalanceOf(id);
+        if (archived && balance > 0)
+            throw AppException.Conflict($"Нельзя вывести из ассортимента товар, который есть на складе: остаток {balance} {product.Unit}");
         product.IsArchived = archived;
         products.Save();
         return product;
