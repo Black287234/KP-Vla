@@ -22,9 +22,9 @@ check POST /api/products 201 '{"article":"кт-0100","name":"Ластик","cate
 check POST /api/products 409 '{"article":"КТ-0100","name":"Ластик","category":"Writing","unit":"шт.","minQuantity":5}'
 check POST /api/products 400 '{"article":"12","name":"","category":null,"unit":"шт.","minQuantity":-1}'
 check PUT /api/products/1 200 '{"article":"КТ-0001","name":"Бумага офисная А4, 80 г/м², 500 листов","category":"Paper","unit":"пачка","minQuantity":25}'
-check POST /api/products/1/archive 200
-check POST /api/products/1/archive 409
-check POST /api/products/1/restore 200
+check POST /api/products/20/archive 200
+check POST /api/products/20/archive 409
+check POST /api/products/20/restore 200
 check POST /api/departments 201 '{"name":"Методический кабинет","head":"Белова Ольга Ивановна"}'
 check POST /api/departments 409 '{"name":"методический  кабинет","head":"Белова Ольга Ивановна"}'
 T=$(date +%F); Y=$(date -d '-1 day' +%F); F=$(date -d '+1 day' +%F); OLD=$(date -d '-40 day' +%F)
