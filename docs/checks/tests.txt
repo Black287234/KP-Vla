@@ -1,14 +1,14 @@
 Тестовый запуск для /home/runner/work/KP-Vla/KP-Vla/Stationery.Tests/bin/Release/net10.0/Stationery.Tests.dll (.NETCoreApp,Version=v10.0)
 A total of 1 test files matched the specified pattern.
-  Passed Products_SeededFromJson [139 ms]
+  Passed Products_SeededFromJson [219 ms]
   Passed UnknownProduct_Returns404WithMessage [59 ms]
-  Passed CreateProduct_Invalid_ReturnsFieldErrors [23 ms]
-  Passed ReceiptAndIssue_ChangeBalance [137 ms]
-  Passed MalformedJson_Returns400InRussian [12 ms]
+  Passed CreateProduct_Invalid_ReturnsFieldErrors [25 ms]
+  Passed ReceiptAndIssue_ChangeBalance [167 ms]
+  Passed MalformedJson_Returns400InRussian [31 ms]
   Passed WrongQueryParameter_Returns400InRussian [1 ms]
-  Passed UnknownApiAddress_Returns404Json [1 ms]
-  Passed IndexPage_IsServed [12 ms]
-  Passed Balance_IsReceiptsMinusIssues [2 ms]
+  Passed UnknownApiAddress_Returns404Json [< 1 ms]
+  Passed IndexPage_IsServed [14 ms]
+  Passed Balance_IsReceiptsMinusIssues [3 ms]
   Passed Issue_MoreThanBalance_Rejected [< 1 ms]
   Passed Issue_WholeBalance_Allowed [< 1 ms]
   Passed Issue_BackdatedBeforeReceipt_Rejected [< 1 ms]
@@ -25,9 +25,9 @@ A total of 1 test files matched the specified pattern.
   Passed Issue_UnknownDepartment_NotFound [< 1 ms]
   Passed LowStock_ShowsShortage [< 1 ms]
   Passed LowStock_AtMinimum_NotListed [< 1 ms]
-  Passed ProductHistory_HasRunningBalance [2 ms]
+  Passed ProductHistory_HasRunningBalance [1 ms]
   Passed History_WrongPeriod_Rejected [< 1 ms]
-  Passed Consumption_SumsIssuesInPeriod [1 ms]
+  Passed Consumption_SumsIssuesInPeriod [2 ms]
   Passed CreateProduct_NormalizesInput [< 1 ms]
   Passed CreateProduct_DuplicateArticle_Conflict [< 1 ms]
   Passed UpdateProduct_UnitChangeWithMovements_Conflict [< 1 ms]
@@ -40,4 +40,4 @@ A total of 1 test files matched the specified pattern.
 Test Run Successful.
 Total tests: 36
      Passed: 36
- Total time: 5,0854 Seconds
+ Total time: 5,4652 Seconds
