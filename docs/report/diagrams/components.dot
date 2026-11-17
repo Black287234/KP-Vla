@@ -1,17 +1,11 @@
 digraph G {
-  graph [rankdir=TB, fontname="Liberation Serif", bgcolor=white, nodesep=0.4, ranksep=0.5];
-  node [shape=component, style=filled, fillcolor="#ffffff", color="#2b2d31", fontname="Liberation Serif", fontsize=11];
-  edge [fontname="Liberation Serif", fontsize=10, color="#6b7079"];
-  subgraph cluster_b { label="Браузер"; style="rounded,filled"; fillcolor="#fbf1df"; color="#c27c0e"; fontname="Liberation Serif";
-    spa [label="Одностраничное приложение\nindex.html, app.js, site.css\nмаршрутизация по #адресу, fetch"]; }
-  subgraph cluster_s { label="Сервер: Stationery.Api (ASP.NET Core)"; style="rounded"; color="#2b2d31"; fontname="Liberation Serif";
-    mw [label="Конвейер: UseAppErrors,\nстатические файлы", shape=box, style="rounded,filled", fillcolor="#f6f4f0"];
-    ep [label="Endpoints\nCatalogEndpoints, StockEndpoints\n+ фильтр проверки Validate<T>"];
-    sv [label="Services\nCatalogService, StockService"];
-    rp [label="Data: хранилища\nIProductRepository, IDepartmentRepository,\nIMovementRepository"];
-    ctx [label="StockContext (EF Core)\nSeedData + seed.json"];
-  }
-  db [label="SQLite\nstationery.db", shape=cylinder, fillcolor="#fbf1df", color="#c27c0e"];
-  spa -> mw [label=" HTTP: JSON /api/*,\n статические файлы"];
-  mw -> ep -> sv -> rp -> ctx -> db;
+  graph [rankdir=TB, fontname="Liberation Serif", bgcolor=white, nodesep=0.5, ranksep=0.4];
+  node [shape=box, style="rounded,filled", fillcolor=white, color="#2b2d31", penwidth=1.4, fontname="Liberation Serif", fontsize=14, width=4.4, height=0.7];
+  edge [color="#c27c0e", penwidth=1.5, fontname="Liberation Serif", fontsize=12];
+  ui [label="Браузер: одностраничный интерфейс\n(HTML, CSS, JavaScript)", fillcolor="#fbf1df", color="#c27c0e"];
+  api [label="API: конечные точки /api/…\nпроверка введённых данных"];
+  sv [label="Сервисы: справочники, поступление,\nвыдача, остатки, отчёты"];
+  rp [label="Хранилища (репозитории)"];
+  db [label="База данных SQLite", shape=cylinder, fillcolor="#fbf1df", color="#c27c0e", width=3];
+  ui -> api [label="  запросы JSON"]; api -> sv -> rp -> db;
 }
