@@ -1,0 +1,20 @@
+digraph G {
+  graph [rankdir=LR, fontname="Liberation Serif", bgcolor=white, nodesep=0.25, ranksep=1.0];
+  node [fontname="Liberation Serif", fontsize=12];
+  edge [fontname="Liberation Serif", fontsize=10, arrowhead=none];
+  keeper [label="Кладовщик\n(хозяйственный\nотдел)", shape=box, style="rounded,filled", fillcolor="#fbf1df", color="#c27c0e"];
+  head [label="Руководитель\nподразделения", shape=box, style="rounded,filled", fillcolor="#fbf1df", color="#c27c0e"];
+  subgraph cluster_s {
+    label="Модуль учёта движения канцелярских товаров"; labelloc=b; style="rounded"; color="#2b2d31"; fontname="Liberation Serif"; fontsize=12;
+    node [shape=ellipse, style=filled, fillcolor="#ffffff", color="#6b7079"];
+    u1 [label="Вести справочник товаров"]; u2 [label="Вести справочник подразделений"];
+    u3 [label="Оформить поступление"]; u4 [label="Оформить выдачу"];
+    u5 [label="Проверить остаток\nна дату выдачи"]; u6 [label="Просмотреть остатки"];
+    u7 [label="Получить список\nк пополнению"]; u8 [label="Просмотреть историю движения"];
+    u9 [label="Сформировать отчёт\nо расходе"];
+  }
+  keeper -> u1; keeper -> u2; keeper -> u3; keeper -> u4; keeper -> u6; keeper -> u7; keeper -> u8; keeper -> u9;
+  head -> u9; head -> u8;
+  u4 -> u5 [style=dashed, arrowhead=vee, label="«include»"];
+  u7 -> u3 [style=dashed, arrowhead=vee, label="«extend»"];
+}

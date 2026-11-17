@@ -1,0 +1,33 @@
+digraph G {
+  graph [rankdir=LR, fontname="Liberation Serif", bgcolor=white, nodesep=0.8, ranksep=1.2];
+  node [shape=plain, fontname="Liberation Serif", fontsize=11];
+  edge [fontname="Liberation Serif", fontsize=10, dir=both, arrowtail=tee, arrowhead=crow];
+  P [label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4">
+    <tr><td colspan="2" bgcolor="#2b2d31"><font color="white"><b>Products</b> (товары)</font></td></tr>
+    <tr><td align="left"><u>Id</u></td><td align="left">INTEGER</td></tr>
+    <tr><td align="left">Article</td><td align="left">TEXT(7), уникален</td></tr>
+    <tr><td align="left">Name</td><td align="left">TEXT(120)</td></tr>
+    <tr><td align="left">Category</td><td align="left">TEXT(20)</td></tr>
+    <tr><td align="left">Unit</td><td align="left">TEXT(15)</td></tr>
+    <tr><td align="left">MinQuantity</td><td align="left">INTEGER</td></tr>
+    <tr><td align="left">IsArchived</td><td align="left">INTEGER</td></tr></table>>];
+  M [label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4">
+    <tr><td colspan="2" bgcolor="#c27c0e"><font color="white"><b>Movements</b> (операции движения)</font></td></tr>
+    <tr><td align="left"><u>Id</u></td><td align="left">INTEGER</td></tr>
+    <tr><td align="left">Kind</td><td align="left">TEXT: Receipt | Issue</td></tr>
+    <tr><td align="left"><i>ProductId</i></td><td align="left">INTEGER, FK</td></tr>
+    <tr><td align="left">Quantity</td><td align="left">INTEGER, CHECK &gt; 0</td></tr>
+    <tr><td align="left">Date</td><td align="left">TEXT (дата)</td></tr>
+    <tr><td align="left">Supplier, DocumentNumber</td><td align="left">TEXT NULL (поступление)</td></tr>
+    <tr><td align="left"><i>DepartmentId</i></td><td align="left">INTEGER NULL, FK (выдача)</td></tr>
+    <tr><td align="left">Recipient</td><td align="left">TEXT NULL (выдача)</td></tr>
+    <tr><td align="left">Comment</td><td align="left">TEXT NULL</td></tr>
+    <tr><td align="left">RegisteredAt</td><td align="left">TEXT (дата и время)</td></tr></table>>];
+  D [label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4">
+    <tr><td colspan="2" bgcolor="#2b2d31"><font color="white"><b>Departments</b> (подразделения)</font></td></tr>
+    <tr><td align="left"><u>Id</u></td><td align="left">INTEGER</td></tr>
+    <tr><td align="left">Name</td><td align="left">TEXT(80), уникально</td></tr>
+    <tr><td align="left">Head</td><td align="left">TEXT(100)</td></tr></table>>];
+  P -> M [label=" 1 : N"];
+  D -> M [label=" 1 : N (только выдачи)", arrowtail=teeodot];
+}

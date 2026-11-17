@@ -1,0 +1,17 @@
+digraph G {
+  graph [rankdir=TB, fontname="Liberation Serif", bgcolor=white, nodesep=0.4, ranksep=0.5];
+  node [shape=component, style=filled, fillcolor="#ffffff", color="#2b2d31", fontname="Liberation Serif", fontsize=11];
+  edge [fontname="Liberation Serif", fontsize=10, color="#6b7079"];
+  subgraph cluster_b { label="Браузер"; style="rounded,filled"; fillcolor="#fbf1df"; color="#c27c0e"; fontname="Liberation Serif";
+    spa [label="Одностраничное приложение\nindex.html, app.js, site.css\nмаршрутизация по #адресу, fetch"]; }
+  subgraph cluster_s { label="Сервер: Stationery.Api (ASP.NET Core)"; style="rounded"; color="#2b2d31"; fontname="Liberation Serif";
+    mw [label="Конвейер: UseAppErrors,\nстатические файлы", shape=box, style="rounded,filled", fillcolor="#f6f4f0"];
+    ep [label="Endpoints\nCatalogEndpoints, StockEndpoints\n+ фильтр проверки Validate<T>"];
+    sv [label="Services\nCatalogService, StockService"];
+    rp [label="Data: хранилища\nIProductRepository, IDepartmentRepository,\nIMovementRepository"];
+    ctx [label="StockContext (EF Core)\nSeedData + seed.json"];
+  }
+  db [label="SQLite\nstationery.db", shape=cylinder, fillcolor="#fbf1df", color="#c27c0e"];
+  spa -> mw [label=" HTTP: JSON /api/*,\n статические файлы"];
+  mw -> ep -> sv -> rp -> ctx -> db;
+}
