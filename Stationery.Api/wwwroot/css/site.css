@@ -64,3 +64,4 @@ td.bad { color: var(--bad); }
 .bar { display: inline-block; width: 120px; height: 8px; background: #ece9e3; vertical-align: middle; margin-right: 6px; }
 .bar i { display: block; height: 100%; background: var(--accent); }
 @media (max-width: 1000px) { .tiles { grid-template-columns: repeat(2, 1fr); } .cols { grid-template-columns: 1fr; } }
+.view a:not(.btn) { color: #8a5a0a; }
