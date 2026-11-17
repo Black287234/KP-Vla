@@ -1,0 +1,16 @@
+## Stationery: исключения Git
+**/bin/
+**/obj/
+.vs/
+*.suo
+*.user
+## локальная база учёта (создаётся из Data/seed.json)
+Stationery.Api/stationery.db
+Stationery.Api/stationery.db-*
+## MSTest
+TestResults/
+## Node.js и Playwright (tools/e2e.mjs)
+node_modules/
+package.json
+package-lock.json
+playwright-report/
